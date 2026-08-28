@@ -1,7 +1,9 @@
 export type ServerMessage =
   | { kind: "instruction"; step: number; text: string; passed: null; message: null }
   | { kind: "result"; step: number; text: null; passed: boolean; message: string }
-  | { kind: "reveal"; step: null; text: string; passed: null; message: null };
+  | { kind: "reveal"; step: null; text: string; passed: null; message: string }
+  | { kind: "topology"; connections: [number, number][] }
+  | { kind: "landmarks"; points: [number, number][] };
 
 export interface FrameMessage {
   type: "frame";
@@ -15,5 +17,11 @@ export interface VerifierState {
   step: number | null;
   instruction: string | null;
   lastResult: { passed: boolean; message: string } | null;
-  revealText: string | null;
+  revealLabel: string | null;
+  revealMessage: string | null;
+}
+
+export interface MeshState {
+  connections: [number, number][];
+  points: [number, number][] | null;
 }

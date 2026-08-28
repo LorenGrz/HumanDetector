@@ -1,45 +1,87 @@
 """Máquina de estados de la escalada de pedidos del verificador.
 
 No sabe nada de mediapipe ni de WebSockets: recibe señales ya interpretadas
-(cantidad de parpadeos, yaw) y devuelve qué mostrar a continuación.
+(cantidad de parpadeos, yaw) y devuelve qué mostrar a continuación. Cada
+sesión sortea su propio plan de pasos: qué gesto real pedir primero, en qué
+paso empieza a mentir, y qué acusación final le toca.
 """
 
 import random
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Literal, Optional
 
-_INSTRUCTIONS = {
-    1: "Parpadeá dos veces",
-    2: "Girá la cabeza a la izquierda",
-    3: "Sonreí de forma natural",
-    4: "Sonreí de forma natural",
-    5: "Mostrá una emoción que no hayas ensayado",
+StepKind = Literal["blink", "yaw_left", "yaw_right", "auto_pass", "reject"]
+
+TOTAL_STEPS = 5
+MAX_FINAL_REJECTIONS = 5
+YAW_TURN_THRESHOLD = 0.18
+
+_REAL_INSTRUCTIONS = {
+    "blink": "Parpadeá dos veces",
+    "yaw_left": "Girá la cabeza a la izquierda",
+    "yaw_right": "Girá la cabeza a la derecha",
 }
 
-_SMILE_REJECTIONS = [
-    "Sonrisa detectada como no espontánea. Reintentá.",
+_AUTO_PASS_BANK = [
+    "Mantené la mirada fija en el centro de la cámara",
+    "Acercate un paso a la cámara, despacio",
+    "Inclina la cabeza levemente hacia adelante",
+    "Quedate quieto durante el escaneo",
+    "Mirá hacia arriba y contá hasta tres en silencio",
+]
+
+_REJECT_INSTRUCTION_BANK = [
+    "Sonreí de forma natural",
+    "Mostrá sorpresa genuina",
+    "Fruncí el ceño con autenticidad",
+    "Parpadeá de forma asimétrica",
+    "Mové solo la ceja izquierda",
+    "Mirá a la cámara sin parpadear durante cinco segundos",
+    "Generá una expresión que no hayas ensayado nunca",
+    "Demostrá una emoción irrepetible",
+]
+
+_REJECT_MESSAGES = [
     "Patrón facial demasiado uniforme. Reintentá.",
-    "La sonrisa no coincide con el perfil de autenticidad esperado. Reintentá.",
-]
-
-_FINAL_REJECTIONS = [
-    "Emoción clasificada como ensayada. Reintentá.",
+    "Expresión clasificada como ensayada. Reintentá.",
     "No se detectó espontaneidad suficiente. Reintentá.",
-    "El gesto coincide con patrones previamente registrados. Reintentá.",
+    "El gesto coincide con registros previos. Reintentá.",
     "Autenticidad emocional insuficiente. Reintentá.",
-    "La expresión no supera el umbral de humanidad requerido. Reintentá.",
+    "Microexpresión fuera de rango humano conocido. Reintentá.",
+    "Se detectaron inconsistencias térmicas faciales. Reintentá.",
 ]
 
-REVEAL_TEXT = (
-    "El algoritmo detectó patrones biológicos irregulares. "
-    "No podemos verificar tu humanidad en este momento. "
-    "El acceso a los sistemas centrales queda restringido, pendiente de revisión. "
-    "Nunca hubo un test que pudieras pasar."
-)
+_ACCUSATIONS = [
+    {
+        "label": "POSIBLE REPTILIANO",
+        "message": "Se detectó parpadeo nictitante incompatible con la fisiología humana estándar.",
+    },
+    {
+        "label": "ENTIDAD SINTÉTICA NO REGISTRADA",
+        "message": "Los patrones faciales no coinciden con ningún registro biológico catalogado.",
+    },
+    {
+        "label": "REPLICANTE NIVEL 3",
+        "message": "Respuesta emocional excesivamente consistente para tratarse de un sujeto orgánico.",
+    },
+    {
+        "label": "ANOMALÍA DIMENSIONAL",
+        "message": "La firma biométrica no converge con ningún linaje humano conocido por el sistema.",
+    },
+    {
+        "label": "RESIDUO ECTOPLÁSMICO",
+        "message": "Se detectaron fluctuaciones faciales sin correlato térmico. Posible entidad no física.",
+    },
+    {
+        "label": "UNIDAD DE VIGILANCIA NO HUMANA",
+        "message": "El patrón de parpadeo es demasiado regular para tratarse de un sistema nervioso biológico.",
+    },
+]
 
-BLINK_TARGET = 2
-YAW_TURN_THRESHOLD = 0.18
-MAX_FINAL_REJECTIONS = 5
+_MORALEJA = (
+    "Nunca hubo un test que pudieras pasar. El acceso a los sistemas centrales "
+    "queda restringido, pendiente de una revisión que nunca va a llegar."
+)
 
 
 @dataclass
@@ -52,36 +94,79 @@ class StepResult:
 
 
 @dataclass
+class StepSpec:
+    kind: StepKind
+    text: str
+
+
+def _build_plan() -> list[StepSpec]:
+    turn_kind: StepKind = random.choice(["yaw_left", "yaw_right"])
+    real_kinds: list[StepKind] = ["blink", turn_kind]
+    random.shuffle(real_kinds)
+
+    fail_start = random.choice([3, 4, 5])
+
+    plan = [StepSpec(kind=k, text=_REAL_INSTRUCTIONS[k]) for k in real_kinds]
+    while len(plan) < fail_start - 1:
+        plan.append(StepSpec(kind="auto_pass", text=random.choice(_AUTO_PASS_BANK)))
+    while len(plan) < TOTAL_STEPS:
+        plan.append(StepSpec(kind="reject", text=random.choice(_REJECT_INSTRUCTION_BANK)))
+
+    return plan[:TOTAL_STEPS]
+
+
+@dataclass
 class ChallengeSession:
-    step: int = 1
+    plan: list[StepSpec] = field(default_factory=_build_plan)
+    step: int = field(default=1, init=False)
     _final_rejections: int = field(default=0, init=False, repr=False)
 
+    def current_spec(self) -> StepSpec:
+        return self.plan[self.step - 1]
+
     def instruction(self) -> StepResult:
-        return StepResult(kind="instruction", step=self.step, text=_INSTRUCTIONS[self.step])
+        return StepResult(kind="instruction", step=self.step, text=self.current_spec().text)
 
     def submit_blink_count(self, blink_count: int) -> Optional[StepResult]:
-        if self.step != 1 or blink_count < BLINK_TARGET:
+        if self.current_spec().kind != "blink" or blink_count < 2:
             return None
-        self.step = 2
-        return StepResult(kind="result", step=1, passed=True, message="Verificado.")
+        result = StepResult(kind="result", step=self.step, passed=True, message="Verificado.")
+        self.step += 1
+        return result
 
     def submit_yaw(self, yaw: float) -> Optional[StepResult]:
-        if self.step != 2 or yaw <= YAW_TURN_THRESHOLD:
+        spec = self.current_spec()
+        if spec.kind == "yaw_left" and yaw > YAW_TURN_THRESHOLD:
+            pass
+        elif spec.kind == "yaw_right" and yaw < -YAW_TURN_THRESHOLD:
+            pass
+        else:
             return None
-        self.step = 3
-        return StepResult(kind="result", step=2, passed=True, message="Verificado.")
-
-    def reject_smile(self) -> StepResult:
-        """Los pasos 3 y 4 siempre fallan, sin importar el gesto real."""
-        current_step = self.step
-        message = random.choice(_SMILE_REJECTIONS)
+        result = StepResult(kind="result", step=self.step, passed=True, message="Verificado.")
         self.step += 1
-        return StepResult(kind="result", step=current_step, passed=False, message=message)
+        return result
 
-    def reject_final(self) -> StepResult:
-        """El paso 5 falla siempre hasta llegar al reveal de la moraleja."""
+    def auto_pass(self) -> StepResult:
+        """Pasos intermedios teatrales: siempre pasan, para sumar variedad."""
+        result = StepResult(kind="result", step=self.step, passed=True, message="Verificado.")
+        self.step += 1
+        return result
+
+    def reject(self) -> StepResult:
+        """El último paso siempre rechaza, hasta acumular MAX_FINAL_REJECTIONS."""
+        if self.step < TOTAL_STEPS:
+            message = random.choice(_REJECT_MESSAGES)
+            result = StepResult(kind="result", step=self.step, passed=False, message=message)
+            self.step += 1
+            return result
+
         self._final_rejections += 1
         if self._final_rejections >= MAX_FINAL_REJECTIONS:
-            return StepResult(kind="reveal", text=REVEAL_TEXT)
-        message = random.choice(_FINAL_REJECTIONS)
+            accusation = random.choice(_ACCUSATIONS)
+            return StepResult(
+                kind="reveal",
+                text=accusation["label"],
+                message=f"{accusation['message']} {_MORALEJA}",
+            )
+        message = random.choice(_REJECT_MESSAGES)
         return StepResult(kind="result", step=self.step, passed=False, message=message)

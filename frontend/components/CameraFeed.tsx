@@ -1,35 +1,54 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { FaceMeshOverlay } from "./FaceMeshOverlay";
 
 const CAPTURE_INTERVAL_MS = 250;
 const JPEG_QUALITY = 0.7;
 
+const ERROR_MESSAGES: Record<string, string> = {
+  NotAllowedError: "Permiso de cámara denegado. Revisá los permisos del sitio en el navegador.",
+  NotFoundError: "No se encontró ninguna cámara conectada.",
+  NotReadableError: "La cámara está siendo usada por otra aplicación.",
+};
+
 interface CameraFeedProps {
   active: boolean;
   onFrame: (base64Jpeg: string) => void;
+  meshPoints: [number, number][] | null;
+  meshConnections: [number, number][];
 }
 
-export function CameraFeed({ active, onFrame }: CameraFeedProps) {
+export function CameraFeed({ active, onFrame, meshPoints, meshConnections }: CameraFeedProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
 
-    navigator.mediaDevices
-      .getUserMedia({ video: { width: 480, height: 480 }, audio: false })
-      .then((s) => {
-        stream = s;
-        if (videoRef.current) videoRef.current.srcObject = s;
-      })
-      .catch((error) => console.error("No se pudo acceder a la cámara", error));
+    if (!navigator.mediaDevices?.getUserMedia) {
+      queueMicrotask(() =>
+        setError("Este navegador no soporta acceso a cámara (necesita HTTPS o localhost).")
+      );
+    } else {
+      navigator.mediaDevices
+        .getUserMedia({ video: { width: 480, height: 480, aspectRatio: 1 }, audio: false })
+        .then((s) => {
+          stream = s;
+          if (videoRef.current) videoRef.current.srcObject = s;
+        })
+        .catch((err: DOMException) => {
+          console.error("No se pudo acceder a la cámara", err);
+          setError(ERROR_MESSAGES[err.name] ?? `No se pudo acceder a la cámara (${err.name}).`);
+        });
+    }
 
     return () => stream?.getTracks().forEach((track) => track.stop());
   }, []);
 
   useEffect(() => {
-    if (!active) return;
+    if (!active || error) return;
 
     const interval = window.setInterval(() => {
       const video = videoRef.current;
@@ -46,14 +65,25 @@ export function CameraFeed({ active, onFrame }: CameraFeedProps) {
     }, CAPTURE_INTERVAL_MS);
 
     return () => window.clearInterval(interval);
-  }, [active, onFrame]);
+  }, [active, error, onFrame]);
 
   return (
     <div className="relative aspect-square w-full max-w-sm overflow-hidden rounded-2xl border-2 border-accent shadow-[0_0_30px_-5px_var(--accent)]">
-      <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute inset-x-0 h-1 bg-accent/70 shadow-[0_0_12px_2px_var(--accent)] animate-scan-line" />
-      </div>
+      {error ? (
+        <div className="flex h-full w-full items-center justify-center bg-surface px-6 text-center text-sm text-danger">
+          {error}
+        </div>
+      ) : (
+        <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
+      )}
+      {!error && meshPoints && meshConnections.length > 0 && (
+        <FaceMeshOverlay points={meshPoints} connections={meshConnections} />
+      )}
+      {!error && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute inset-x-0 h-1 bg-accent/70 shadow-[0_0_12px_2px_var(--accent)] animate-scan-line" />
+        </div>
+      )}
       <span className="absolute top-2 right-2 rounded-full bg-black/60 px-2 py-1 font-mono text-[10px] tracking-widest text-accent">
         LIVE FEED
       </span>

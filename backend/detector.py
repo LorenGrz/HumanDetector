@@ -1,12 +1,13 @@
 """Extracción de señales crudas de landmarks faciales (mediapipe Tasks API).
 
-No conoce el guion de la verificación: solo expone parpadeos contados y el
-yaw (giro horizontal) estimado. La interpretación de esas señales como
+No conoce el guion de la verificación: solo expone señales (parpadeos,
+yaw, puntos de malla facial). La interpretación de esas señales como
 "pasa" o "no pasa" vive en challenge.py.
 """
 
 import math
 import time
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
@@ -14,7 +15,12 @@ import cv2
 import mediapipe as mp
 import numpy as np
 from mediapipe.tasks.python import BaseOptions
-from mediapipe.tasks.python.vision import FaceLandmarker, FaceLandmarkerOptions, RunningMode
+from mediapipe.tasks.python.vision import (
+    FaceLandmarker,
+    FaceLandmarkerOptions,
+    FaceLandmarksConnections,
+    RunningMode,
+)
 
 _MODEL_PATH = Path(__file__).parent / "models" / "face_landmarker.task"
 
@@ -26,15 +32,31 @@ _RIGHT_EYE_OUTER = 263
 
 _EAR_CLOSED_THRESHOLD = 0.21
 
+# Subset de landmarks usado para la malla visual (contornos: ojos, cejas,
+# labios, óvalo de cara, nariz), remapeados a índices compactos 0..N-1 para
+# no tener que mandar los 478 landmarks completos por frame.
+_CONTOUR_CONNECTIONS = FaceLandmarksConnections.FACE_LANDMARKS_CONTOURS
+_CONTOUR_INDICES = sorted({i for c in _CONTOUR_CONNECTIONS for i in (c.start, c.end)})
+_INDEX_MAP = {original: compact for compact, original in enumerate(_CONTOUR_INDICES)}
 
-def _eye_aspect_ratio(landmarks, indices: list[int]) -> float:
-    p = [landmarks[i] for i in indices]
-    vertical_1 = math.dist((p[1].x, p[1].y), (p[5].x, p[5].y))
-    vertical_2 = math.dist((p[2].x, p[2].y), (p[4].x, p[4].y))
-    horizontal = math.dist((p[0].x, p[0].y), (p[3].x, p[3].y))
+MESH_CONNECTIONS = [(_INDEX_MAP[c.start], _INDEX_MAP[c.end]) for c in _CONTOUR_CONNECTIONS]
+
+
+def _eye_aspect_ratio(points: list[tuple[float, float]], indices: list[int]) -> float:
+    p = [points[i] for i in indices]
+    vertical_1 = math.dist(p[1], p[5])
+    vertical_2 = math.dist(p[2], p[4])
+    horizontal = math.dist(p[0], p[3])
     if horizontal == 0:
         return 0.0
     return (vertical_1 + vertical_2) / (2.0 * horizontal)
+
+
+@dataclass
+class FrameSignals:
+    mesh_points: list[tuple[float, float]]
+    yaw: float
+    blink_count: int
 
 
 class FaceGestureDetector:
@@ -50,7 +72,8 @@ class FaceGestureDetector:
         self._eye_closed = False
         self._blink_count = 0
 
-    def _landmarks(self, frame_bgr: np.ndarray):
+    def analyze(self, frame_bgr: np.ndarray) -> Optional[FrameSignals]:
+        """Corre una única inferencia por frame y deriva todas las señales."""
         rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
 
@@ -62,49 +85,30 @@ class FaceGestureDetector:
         result = self._landmarker.detect_for_video(mp_image, timestamp_ms)
         if not result.face_landmarks:
             return None
-        return result.face_landmarks[0]
 
-    def count_blinks(self, frame_bgr: np.ndarray) -> int:
-        """Cuenta transiciones ojo-abierto -> ojo-cerrado -> ojo-abierto."""
-        landmarks = self._landmarks(frame_bgr)
-        if landmarks is None:
-            return self._blink_count
+        landmarks = result.face_landmarks[0]
+        points = [(lm.x, lm.y) for lm in landmarks]
 
         ear = (
-            _eye_aspect_ratio(landmarks, _LEFT_EYE)
-            + _eye_aspect_ratio(landmarks, _RIGHT_EYE)
+            _eye_aspect_ratio(points, _LEFT_EYE) + _eye_aspect_ratio(points, _RIGHT_EYE)
         ) / 2.0
-
         if ear < _EAR_CLOSED_THRESHOLD and not self._eye_closed:
             self._eye_closed = True
         elif ear >= _EAR_CLOSED_THRESHOLD and self._eye_closed:
             self._eye_closed = False
             self._blink_count += 1
 
-        return self._blink_count
+        # Yaw positivo = usuario girado hacia SU propia izquierda (ver nota
+        # de convención de cámara no espejada en challenge.py).
+        left = points[_LEFT_EYE_OUTER]
+        right = points[_RIGHT_EYE_OUTER]
+        face_center_x = (left[0] + right[0]) / 2.0
+        face_width = abs(right[0] - left[0])
+        yaw = (points[_NOSE_TIP][0] - face_center_x) / face_width if face_width else 0.0
 
-    def detect_yaw(self, frame_bgr: np.ndarray) -> Optional[float]:
-        """Offset horizontal de la nariz relativo al ancho de cara, en [-1, 1].
+        mesh_points = [points[i] for i in _CONTOUR_INDICES]
 
-        La cámara mira de frente al usuario y el frame NO está espejado
-        (es el feed crudo de getUserMedia, no el preview con scaleX(-1) que
-        ve el usuario). Con esa convención, un yaw positivo corresponde a
-        que el usuario giró hacia SU propia izquierda.
-        """
-        landmarks = self._landmarks(frame_bgr)
-        if landmarks is None:
-            return None
-
-        nose = landmarks[_NOSE_TIP]
-        left = landmarks[_LEFT_EYE_OUTER]
-        right = landmarks[_RIGHT_EYE_OUTER]
-
-        face_center_x = (left.x + right.x) / 2.0
-        face_width = abs(right.x - left.x)
-        if face_width == 0:
-            return None
-
-        return (nose.x - face_center_x) / face_width
+        return FrameSignals(mesh_points=mesh_points, yaw=yaw, blink_count=self._blink_count)
 
     def close(self) -> None:
         self._landmarker.close()

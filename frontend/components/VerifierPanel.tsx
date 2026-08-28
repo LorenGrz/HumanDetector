@@ -7,9 +7,18 @@ interface VerifierPanelProps {
   instruction: string;
   lastResult: { passed: boolean; message: string } | null;
   onFrame: (base64Jpeg: string) => void;
+  meshPoints: [number, number][] | null;
+  meshConnections: [number, number][];
 }
 
-export function VerifierPanel({ step, instruction, lastResult, onFrame }: VerifierPanelProps) {
+export function VerifierPanel({
+  step,
+  instruction,
+  lastResult,
+  onFrame,
+  meshPoints,
+  meshConnections,
+}: VerifierPanelProps) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-between px-6 py-8">
       <header className="flex w-full max-w-sm items-center justify-between font-mono text-xs tracking-widest text-accent">
@@ -21,7 +30,12 @@ export function VerifierPanel({ step, instruction, lastResult, onFrame }: Verifi
 
       <div className="flex flex-1 flex-col items-center justify-center gap-6">
         <p className="text-center text-xl font-semibold">{instruction}</p>
-        <CameraFeed active onFrame={onFrame} />
+        <CameraFeed
+          active
+          onFrame={onFrame}
+          meshPoints={meshPoints}
+          meshConnections={meshConnections}
+        />
         <StatusLine result={lastResult} />
         <ProgressDots step={step} total={TOTAL_STEPS} />
       </div>

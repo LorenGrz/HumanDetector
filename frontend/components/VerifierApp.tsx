@@ -5,10 +5,12 @@ import { VerifierPanel } from "./VerifierPanel";
 import { RevealScreen } from "./RevealScreen";
 
 export function VerifierApp() {
-  const { state, sendFrame, restart } = useVerifierSession();
+  const { state, mesh, sendFrame, restart } = useVerifierSession();
 
-  if (state.phase === "reveal" && state.revealText) {
-    return <RevealScreen text={state.revealText} onRestart={restart} />;
+  if (state.phase === "reveal" && state.revealLabel && state.revealMessage) {
+    return (
+      <RevealScreen label={state.revealLabel} message={state.revealMessage} onRestart={restart} />
+    );
   }
 
   if (state.phase === "verifying" && state.instruction && state.step) {
@@ -18,6 +20,8 @@ export function VerifierApp() {
         instruction={state.instruction}
         lastResult={state.lastResult}
         onFrame={sendFrame}
+        meshPoints={mesh.points}
+        meshConnections={mesh.connections}
       />
     );
   }

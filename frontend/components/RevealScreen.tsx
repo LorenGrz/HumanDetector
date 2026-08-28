@@ -1,15 +1,16 @@
 interface RevealScreenProps {
-  text: string;
+  label: string;
+  message: string;
   onRestart: () => void;
 }
 
-export function RevealScreen({ text, onRestart }: RevealScreenProps) {
+export function RevealScreen({ label, message, onRestart }: RevealScreenProps) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
       <span className="font-mono text-xs tracking-widest text-accent">HUMAN PROTOCOL</span>
       <WarningIcon />
-      <h1 className="text-2xl font-bold tracking-wide">VERIFICATION FAILED</h1>
-      <p className="max-w-sm text-sm leading-relaxed text-muted">{text}</p>
+      <h1 className="text-2xl font-bold tracking-wide">{label}</h1>
+      <p className="max-w-sm text-sm leading-relaxed text-muted">{message}</p>
       <button
         onClick={onRestart}
         className="rounded-full border border-accent px-6 py-2 font-mono text-xs tracking-widest text-accent transition hover:bg-accent hover:text-background"

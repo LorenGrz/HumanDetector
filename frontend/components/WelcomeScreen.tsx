@@ -8,9 +8,9 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
       <span className="font-mono text-xs tracking-widest text-accent">HUMAN PROTOCOL</span>
       <h1 className="text-3xl font-bold tracking-wide">¿SOS HUMANO?</h1>
       <p className="max-w-sm text-sm leading-relaxed text-muted">
-        Vas a tener que probarlo. El sistema te va a pedir gestos frente a la cámara,
-        cada vez más difíciles, contra un reloj que se achica en cada intento. Necesita
-        acceso a tu cámara para empezar.
+        Vas a tener que probarlo.
+        <br />
+        Necesito acceso a tu cámara para empezar.
       </p>
       <button
         onClick={onStart}

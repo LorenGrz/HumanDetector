@@ -1,4 +1,5 @@
 import type { RevealVariant } from "@/types/protocol";
+import { RevealSound } from "./RevealSound";
 
 interface RevealScreenProps {
   variant: RevealVariant;
@@ -13,6 +14,7 @@ export function RevealScreen({ variant, label, message, onRestart }: RevealScree
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
+      <RevealSound variant={variant} />
       <span className="font-mono text-xs tracking-widest text-accent">HUMAN PROTOCOL</span>
       {isConfirmed ? <CheckIcon /> : <WarningIcon />}
       <h1 className={`text-2xl font-bold tracking-wide ${toneColor}`}>{label}</h1>

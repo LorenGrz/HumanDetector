@@ -15,6 +15,11 @@ export interface FrameMessage {
 export type VerifierPhase = "connecting" | "verifying" | "reveal" | "disconnected";
 export type RevealVariant = "reject" | "confirmed";
 
+export interface SuspicionEntry {
+  id: number;
+  text: string;
+}
+
 export interface VerifierState {
   phase: VerifierPhase;
   step: number | null;
@@ -24,7 +29,7 @@ export interface VerifierState {
   revealVariant: RevealVariant;
   revealLabel: string | null;
   revealMessage: string | null;
-  suspicionLog: string[];
+  suspicionLog: SuspicionEntry[];
 }
 
 export interface MeshState {

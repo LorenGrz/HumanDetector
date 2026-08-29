@@ -2,6 +2,7 @@ import { CameraFeed } from "./CameraFeed";
 import { Countdown } from "./Countdown";
 import { SuspicionLog } from "./SuspicionLog";
 import { MuteButton } from "./MuteButton";
+import type { SuspicionEntry } from "@/types/protocol";
 
 const TOTAL_STEPS = 10;
 
@@ -10,7 +11,7 @@ interface VerifierPanelProps {
   instruction: string;
   instructionDuration: number | null;
   lastResult: { passed: boolean; message: string } | null;
-  suspicionLog: string[];
+  suspicionLog: SuspicionEntry[];
   onFrame: (base64Jpeg: string) => void;
   meshPoints: [number, number][] | null;
   meshConnections: [number, number][];

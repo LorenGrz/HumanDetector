@@ -50,11 +50,6 @@ function applyMessage(state: VerifierState, message: ServerMessage): VerifierSta
         revealLabel: message.text,
         revealMessage: message.message,
       };
-    case "suspicion":
-      return {
-        ...state,
-        suspicionLog: [...state.suspicionLog, message.text].slice(-SUSPICION_LOG_MAX),
-      };
     default:
       return state;
   }
@@ -66,6 +61,10 @@ export function useVerifierSession() {
   const [mesh, setMesh] = useState<MeshState>(INITIAL_MESH);
   const [sessionId, setSessionId] = useState(0);
   const socketRef = useRef<VerifierSocket | null>(null);
+  // Id incremental por mensaje de sospecha: ni el texto (se repite) ni el
+  // índice (se reutiliza al desplazar la lista) sirven como key estable
+  // para animar cada aparición nueva sin reconciliaciones raras de React.
+  const nextSuspicionId = useRef(0);
 
   useEffect(() => {
     const socket = new VerifierSocket(WS_URL, {
@@ -76,6 +75,14 @@ export function useVerifierSession() {
         }
         if (message.kind === "landmarks") {
           setMesh((prev) => ({ ...prev, points: message.points }));
+          return;
+        }
+        if (message.kind === "suspicion") {
+          const entry = { id: nextSuspicionId.current++, text: message.text };
+          setState((prev) => ({
+            ...prev,
+            suspicionLog: [...prev.suspicionLog, entry].slice(-SUSPICION_LOG_MAX),
+          }));
           return;
         }
         setState((prev) => applyMessage(prev, message));

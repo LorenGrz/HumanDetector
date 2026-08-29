@@ -24,8 +24,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-AUTO_PASS_SECONDS = 2.0
-REJECTION_SCAN_SECONDS = 2.5
+AUTO_PASS_SECONDS = 10.0
+REJECTION_SCAN_SECONDS = 10.0
 
 
 def _decode_frame(data_url: str) -> np.ndarray | None:

@@ -30,15 +30,19 @@ _AUTO_PASS_BANK = [
     "Mirá hacia arriba y contá hasta tres en silencio",
 ]
 
-_REJECT_INSTRUCTION_BANK = [
+# Ordenado de más fácil a más imposible: cada rechazo avanza un lugar en
+# esta lista, así la dificultad sube de forma continua en vez de random.
+_REJECT_DIFFICULTY_BANK = [
     "Sonreí de forma natural",
     "Mostrá sorpresa genuina",
     "Fruncí el ceño con autenticidad",
     "Parpadeá de forma asimétrica",
     "Mové solo la ceja izquierda",
-    "Mirá a la cámara sin parpadear durante cinco segundos",
+    "Mirá a la cámara sin parpadear durante diez segundos",
     "Generá una expresión que no hayas ensayado nunca",
     "Demostrá una emoción irrepetible",
+    "Sincronizá tu expresión con un recuerdo que no tenés",
+    "Mostrá una emoción que la especie humana todavía no descubrió",
 ]
 
 _REJECT_MESSAGES = [
@@ -104,13 +108,15 @@ def _build_plan() -> list[StepSpec]:
     real_kinds: list[StepKind] = ["blink", turn_kind]
     random.shuffle(real_kinds)
 
-    fail_start = random.choice([3, 4, 5])
+    # Mínimo 4 pasos antes de empezar a rechazar: que no se sienta forzado
+    # ni se note de entrada que el resultado ya está decidido.
+    fail_start = random.choice([4, 5])
 
     plan = [StepSpec(kind=k, text=_REAL_INSTRUCTIONS[k]) for k in real_kinds]
     while len(plan) < fail_start - 1:
         plan.append(StepSpec(kind="auto_pass", text=random.choice(_AUTO_PASS_BANK)))
     while len(plan) < TOTAL_STEPS:
-        plan.append(StepSpec(kind="reject", text=random.choice(_REJECT_INSTRUCTION_BANK)))
+        plan.append(StepSpec(kind="reject", text=""))  # texto real: ver _reject_text()
 
     return plan[:TOTAL_STEPS]
 
@@ -120,12 +126,19 @@ class ChallengeSession:
     plan: list[StepSpec] = field(default_factory=_build_plan)
     step: int = field(default=1, init=False)
     _final_rejections: int = field(default=0, init=False, repr=False)
+    _reject_index: int = field(default=0, init=False, repr=False)
 
     def current_spec(self) -> StepSpec:
         return self.plan[self.step - 1]
 
+    def _reject_text(self) -> str:
+        index = min(self._reject_index, len(_REJECT_DIFFICULTY_BANK) - 1)
+        return _REJECT_DIFFICULTY_BANK[index]
+
     def instruction(self) -> StepResult:
-        return StepResult(kind="instruction", step=self.step, text=self.current_spec().text)
+        spec = self.current_spec()
+        text = self._reject_text() if spec.kind == "reject" else spec.text
+        return StepResult(kind="instruction", step=self.step, text=text)
 
     def submit_blink_count(self, blink_count: int) -> Optional[StepResult]:
         if self.current_spec().kind != "blink" or blink_count < 2:
@@ -154,6 +167,8 @@ class ChallengeSession:
 
     def reject(self) -> StepResult:
         """El último paso siempre rechaza, hasta acumular MAX_FINAL_REJECTIONS."""
+        self._reject_index += 1
+
         if self.step < TOTAL_STEPS:
             message = random.choice(_REJECT_MESSAGES)
             result = StepResult(kind="result", step=self.step, passed=False, message=message)

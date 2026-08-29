@@ -16,10 +16,14 @@ import random
 from dataclasses import dataclass, field
 from typing import Literal, Optional
 
-StepKind = Literal["blink", "yaw_left", "yaw_right", "auto_pass", "reject"]
+StepKind = Literal[
+    "blink", "yaw_left", "yaw_right", "mouth_open", "tilt_left", "tilt_right", "auto_pass", "reject"
+]
 
 TOTAL_STEPS = 10
 YAW_TURN_THRESHOLD = 0.18
+TILT_THRESHOLD_DEGREES = 12.0
+MOUTH_OPEN_THRESHOLD = 0.5
 
 # El contador arranca en el paso 3 (recién después del 2do paso real) y se
 # achica en cada intento siguiente, hasta un piso, para que la presión
@@ -29,15 +33,40 @@ PRESSURE_STEP_SECONDS = 1.0
 PRESSURE_FLOOR_SECONDS = 3.0
 
 # Energía de movimiento (suma de desplazamientos de landmarks normalizados
-# durante la ventana del intento) necesaria para que "siga el ritmo" y el
-# paso se apruebe de verdad. Ajustar según cámara/luz del evento.
-MOTION_PASS_THRESHOLD = 8.0
+# durante la ventana del intento) necesaria para que "siga el ritmo". No
+# alcanza por sí sola: además hay que ganar el sorteo de CONFIRM_PROBABILITY
+# — así es difícil que pase incluso moviéndose mucho, y casi imposible que
+# pase dos veces seguidas. Ajustar umbral según cámara/luz del evento.
+MOTION_PASS_THRESHOLD = 10.0
+CONFIRM_PROBABILITY = 1 / 6
 
 _REAL_INSTRUCTIONS = {
     "blink": "Parpadeá dos veces",
     "yaw_left": "Girá la cabeza a la izquierda",
     "yaw_right": "Girá la cabeza a la derecha",
+    "mouth_open": "Abrí la boca",
+    "tilt_left": "Inclina la cabeza hacia tu hombro izquierdo",
+    "tilt_right": "Inclina la cabeza hacia tu hombro derecho",
 }
+
+# Familias de gestos reales: cada sesión elige REAL_STEP_COUNT familias al
+# azar (sin repetir) y, si la familia tiene variantes (izquierda/derecha),
+# sortea cuál. Así los primeros pasos varían de sesión a sesión en vez de
+# ser siempre "parpadeá y girá la cabeza".
+_REAL_FAMILIES: list[list[StepKind]] = [
+    ["blink"],
+    ["yaw_left", "yaw_right"],
+    ["mouth_open"],
+    ["tilt_left", "tilt_right"],
+]
+REAL_STEP_COUNT = 3
+
+
+def _pick_real_kinds() -> list[StepKind]:
+    families = random.sample(_REAL_FAMILIES, k=REAL_STEP_COUNT)
+    kinds = [random.choice(family) for family in families]
+    random.shuffle(kinds)
+    return kinds
 
 _AUTO_PASS_BANK = [
     "Mantené la mirada fija en el centro de la cámara",
@@ -197,6 +226,22 @@ _ACCUSATIONS = [
         "label": "UNIDAD DE VIGILANCIA NO HUMANA",
         "message": "El patrón de parpadeo es demasiado regular para tratarse de un sistema nervioso biológico.",
     },
+    {
+        "label": "VIAJERO TEMPORAL NO REGISTRADO",
+        "message": "El patrón de envejecimiento facial no coincide con la edad declarada.",
+    },
+    {
+        "label": "PROTOTIPO DE IA FUGADO",
+        "message": "Las respuestas son demasiado consistentes con un modelo entrenado. Posible fuga de laboratorio.",
+    },
+    {
+        "label": "DOBLE DE CUERPO NO ACREDITADO",
+        "message": "Coincidencia biométrica parcial con una identidad ya registrada. Posible sustitución.",
+    },
+    {
+        "label": "MIEMBRO DE SOCIEDAD SECRETA NIVEL MEDIO",
+        "message": "Se detectaron gestos faciales compatibles con protocolos de reconocimiento no públicos.",
+    },
 ]
 
 _SUSPICION_NEUTRAL = [
@@ -216,8 +261,8 @@ _SUSPICION_CRITICAL = [
 ]
 
 _MORALEJA = (
-    "Nunca hubo un test que pudieras pasar. El acceso a los sistemas centrales "
-    "queda restringido, pendiente de una revisión que nunca va a llegar."
+    "El acceso a los sistemas centrales queda restringido, pendiente de una "
+    "revisión que nunca va a llegar."
 )
 
 _CONFIRMED_MESSAGE = (
@@ -244,13 +289,12 @@ class StepSpec:
 
 
 def _build_plan() -> list[StepSpec]:
-    turn_kind: StepKind = random.choice(["yaw_left", "yaw_right"])
-    real_kinds: list[StepKind] = ["blink", turn_kind]
-    random.shuffle(real_kinds)
+    real_kinds = _pick_real_kinds()
 
     # Mínimo 4 pasos antes de empezar a rechazar: que no se sienta forzado
-    # ni se note de entrada que el resultado ya está decidido.
-    fail_start = random.choice([4, 5])
+    # ni se note de entrada que el resultado ya está decidido. Con 3 pasos
+    # reales de base, fail_start >= 5 asegura ese mínimo de 4.
+    fail_start = random.choice([5, 6])
 
     plan = [StepSpec(kind=k, text=_REAL_INSTRUCTIONS[k]) for k in real_kinds]
     while len(plan) < fail_start - 1:
@@ -314,6 +358,25 @@ class ChallengeSession:
         self.step += 1
         return result
 
+    def submit_tilt(self, roll_degrees: float) -> Optional[StepResult]:
+        spec = self.current_spec()
+        if spec.kind == "tilt_left" and roll_degrees < -TILT_THRESHOLD_DEGREES:
+            pass
+        elif spec.kind == "tilt_right" and roll_degrees > TILT_THRESHOLD_DEGREES:
+            pass
+        else:
+            return None
+        result = StepResult(kind="result", step=self.step, passed=True, message="Verificado.")
+        self.step += 1
+        return result
+
+    def submit_mouth_open(self, mouth_aspect_ratio: float) -> Optional[StepResult]:
+        if self.current_spec().kind != "mouth_open" or mouth_aspect_ratio < MOUTH_OPEN_THRESHOLD:
+            return None
+        result = StepResult(kind="result", step=self.step, passed=True, message="Verificado.")
+        self.step += 1
+        return result
+
     def auto_pass(self) -> StepResult:
         """Pasos intermedios teatrales: siempre pasan, para sumar variedad."""
         self._pressure_index += 1
@@ -324,13 +387,14 @@ class ChallengeSession:
     def resolve_reject(self, motion_score: float) -> StepResult:
         """Paso contra reloj, cada vez más corto.
 
-        Si el movimiento durante la ventana supera MOTION_PASS_THRESHOLD, el
-        paso se aprueba de verdad (raro pero posible, en cualquier intento,
-        no solo el último). Si no, rechaza y avanza — y si era el último de
-        los TOTAL_STEPS, dispara el veredicto final.
+        Moverse lo suficiente (MOTION_PASS_THRESHOLD) es necesario pero no
+        alcanza: además hay que ganar un sorteo de CONFIRM_PROBABILITY
+        (1 en 6). Así es raro que un intento pase, y mucho más raro que
+        pasen dos seguidos. Si no pasa, rechaza y avanza — y si era el
+        último de los TOTAL_STEPS, dispara el veredicto final.
         """
         self._pressure_index += 1
-        passed = motion_score >= MOTION_PASS_THRESHOLD
+        passed = motion_score >= MOTION_PASS_THRESHOLD and random.random() < CONFIRM_PROBABILITY
         is_last_step = self.step >= TOTAL_STEPS
 
         if passed:

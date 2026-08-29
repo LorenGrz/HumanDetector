@@ -132,11 +132,14 @@ async def _run_real_step(
             continue
         await sender.send_landmarks(signals)
 
-        result = (
-            session.submit_blink_count(signals.blink_count)
-            if kind == "blink"
-            else session.submit_yaw(signals.yaw)
-        )
+        if kind == "blink":
+            result = session.submit_blink_count(signals.blink_count)
+        elif kind in ("yaw_left", "yaw_right"):
+            result = session.submit_yaw(signals.yaw)
+        elif kind in ("tilt_left", "tilt_right"):
+            result = session.submit_tilt(signals.roll_degrees)
+        else:
+            result = session.submit_mouth_open(signals.mouth_aspect_ratio)
         if result:
             elapsed = time.monotonic() - start
             if elapsed < MIN_STEP_SECONDS:

@@ -29,6 +29,10 @@ _RIGHT_EYE = [362, 385, 387, 263, 373, 380]
 _NOSE_TIP = 1
 _LEFT_EYE_OUTER = 33
 _RIGHT_EYE_OUTER = 263
+_MOUTH_TOP = 13
+_MOUTH_BOTTOM = 14
+_MOUTH_LEFT = 61
+_MOUTH_RIGHT = 291
 
 _EAR_CLOSED_THRESHOLD = 0.21
 
@@ -56,6 +60,8 @@ def _eye_aspect_ratio(points: list[tuple[float, float]], indices: list[int]) -> 
 class FrameSignals:
     mesh_points: list[tuple[float, float]]
     yaw: float
+    roll_degrees: float
+    mouth_aspect_ratio: float
     blink_count: int
 
 
@@ -99,16 +105,29 @@ class FaceGestureDetector:
             self._blink_count += 1
 
         # Yaw positivo = usuario girado hacia SU propia izquierda (ver nota
-        # de convención de cámara no espejada en challenge.py).
+        # de convención de cámara no espejada en challenge.py). Misma
+        # convención para roll (inclinación lateral de cabeza).
         left = points[_LEFT_EYE_OUTER]
         right = points[_RIGHT_EYE_OUTER]
         face_center_x = (left[0] + right[0]) / 2.0
         face_width = abs(right[0] - left[0])
         yaw = (points[_NOSE_TIP][0] - face_center_x) / face_width if face_width else 0.0
 
+        roll_degrees = math.degrees(math.atan2(right[1] - left[1], right[0] - left[0]))
+
+        mouth_vertical = math.dist(points[_MOUTH_TOP], points[_MOUTH_BOTTOM])
+        mouth_horizontal = math.dist(points[_MOUTH_LEFT], points[_MOUTH_RIGHT])
+        mouth_aspect_ratio = mouth_vertical / mouth_horizontal if mouth_horizontal else 0.0
+
         mesh_points = [points[i] for i in _CONTOUR_INDICES]
 
-        return FrameSignals(mesh_points=mesh_points, yaw=yaw, blink_count=self._blink_count)
+        return FrameSignals(
+            mesh_points=mesh_points,
+            yaw=yaw,
+            roll_degrees=roll_degrees,
+            mouth_aspect_ratio=mouth_aspect_ratio,
+            blink_count=self._blink_count,
+        )
 
     def close(self) -> None:
         self._landmarker.close()

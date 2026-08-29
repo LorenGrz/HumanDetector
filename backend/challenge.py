@@ -128,6 +128,22 @@ _REJECT_TIER_MILD = [
             "Parece más un tic que un sentimiento.",
         ],
     },
+    {
+        "text": "Mostrá desconfianza genuina",
+        "suspicion_bank": [
+            "La desconfianza se nota, pero llega tarde.",
+            "¿Eso fue desconfianza o solo una corriente de aire?",
+            "Gesto registrado. Autenticidad: en duda.",
+        ],
+    },
+    {
+        "text": "Hacé un gesto de asombro real",
+        "suspicion_bank": [
+            "El asombro parece de manual.",
+            "Ojos bien abiertos, pero la ceja no acompaña.",
+            "Reacción demasiado prolija para ser espontánea.",
+        ],
+    },
 ]
 
 _REJECT_TIER_MEDIUM = [
@@ -163,6 +179,22 @@ _REJECT_TIER_MEDIUM = [
             "Se detecta duda, no autenticidad.",
         ],
     },
+    {
+        "text": "Arrugá solo la nariz",
+        "suspicion_bank": [
+            "La nariz se arruga, el resto de la cara no coopera.",
+            "Movimiento aislado sospechosamente preciso.",
+            "¿Alguien puede mover solo la nariz? Dudoso.",
+        ],
+    },
+    {
+        "text": "Sonreí de un solo lado de la boca",
+        "suspicion_bank": [
+            "Sonrisa asimétrica detectada. Simetría facial: cuestionada.",
+            "Un lado de la boca coopera, el otro se resiste.",
+            "Control muscular unilateral fuera de lo esperado.",
+        ],
+    },
 ]
 
 _REJECT_TIER_IMPOSSIBLE = [
@@ -188,6 +220,22 @@ _REJECT_TIER_IMPOSSIBLE = [
             "Definición pendiente. El sistema tampoco sabe qué buscar.",
             "El sujeto sigue esforzándose por algo indefinible.",
             "Ni el protocolo sabe cómo se vería eso. Igual, insiste.",
+        ],
+    },
+    {
+        "text": "Mostrá alegría sin mover ningún músculo conocido",
+        "suspicion_bank": [
+            "Contradicción detectada: toda alegría implica movimiento muscular.",
+            "El sujeto lo intenta igual. Persistencia anotada.",
+            "No hay músculo que cumpla ese criterio. Se solicita igual.",
+        ],
+    },
+    {
+        "text": "Expresá una emoción que vas a sentir recién en el futuro",
+        "suspicion_bank": [
+            "El sistema no puede verificar emociones que todavía no ocurrieron.",
+            "Se detecta un intento de anticipación emocional. Insuficiente.",
+            "Pedido temporalmente imposible. El sujeto igual pone cara.",
         ],
     },
 ]

@@ -61,6 +61,7 @@ class FrameSignals:
     mesh_points: list[tuple[float, float]]
     yaw: float
     roll_degrees: float
+    pitch_ratio: float
     mouth_aspect_ratio: float
     face_width: float
     blink_count: int
@@ -116,6 +117,13 @@ class FaceGestureDetector:
 
         roll_degrees = math.degrees(math.atan2(right[1] - left[1], right[0] - left[0]))
 
+        # Distancia vertical nariz->línea de ojos, normalizada por ancho de
+        # cara. No tiene un "cero" absoluto confiable (varía por persona y
+        # distancia a cámara), así que se usa siempre contra una línea base
+        # capturada al entrar al paso (ver submit_pitch en challenge.py).
+        eye_line_y = (left[1] + right[1]) / 2.0
+        pitch_ratio = (points[_NOSE_TIP][1] - eye_line_y) / face_width if face_width else 0.0
+
         mouth_vertical = math.dist(points[_MOUTH_TOP], points[_MOUTH_BOTTOM])
         mouth_horizontal = math.dist(points[_MOUTH_LEFT], points[_MOUTH_RIGHT])
         mouth_aspect_ratio = mouth_vertical / mouth_horizontal if mouth_horizontal else 0.0
@@ -126,6 +134,7 @@ class FaceGestureDetector:
             mesh_points=mesh_points,
             yaw=yaw,
             roll_degrees=roll_degrees,
+            pitch_ratio=pitch_ratio,
             mouth_aspect_ratio=mouth_aspect_ratio,
             face_width=face_width,
             blink_count=self._blink_count,

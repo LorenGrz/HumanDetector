@@ -124,6 +124,7 @@ async def _run_real_step(
     MIN_STEP_SECONDS, aunque se detecte antes — mismo motivo que arriba."""
     start = time.monotonic()
     baseline_face_width: float | None = None
+    baseline_pitch_ratio: float | None = None
 
     while True:
         frame = await sender.receive_frame()
@@ -142,6 +143,11 @@ async def _run_real_step(
             result = session.submit_tilt(signals.roll_degrees)
         elif kind == "mouth_open":
             result = session.submit_mouth_open(signals.mouth_aspect_ratio)
+        elif kind == "tilt_forward":
+            if baseline_pitch_ratio is None:
+                baseline_pitch_ratio = signals.pitch_ratio
+                continue
+            result = session.submit_pitch(signals.pitch_ratio, baseline_pitch_ratio)
         else:
             if baseline_face_width is None:
                 baseline_face_width = signals.face_width

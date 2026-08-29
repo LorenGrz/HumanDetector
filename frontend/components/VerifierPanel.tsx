@@ -43,7 +43,7 @@ export function VerifierPanel({
             />
           )}
         </div>
-        <p className="line-clamp-2 min-h-[4.5rem] text-center text-3xl font-bold">{instruction}</p>
+        <p className="line-clamp-3 min-h-[6.75rem] text-center text-3xl font-bold">{instruction}</p>
         <CameraFeed
           active
           onFrame={onFrame}

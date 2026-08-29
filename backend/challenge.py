@@ -23,6 +23,7 @@ StepKind = Literal[
     "mouth_open",
     "tilt_left",
     "tilt_right",
+    "tilt_forward",
     "move_closer",
     "auto_pass",
     "reject",
@@ -35,6 +36,10 @@ MOUTH_OPEN_THRESHOLD = 0.5
 # Cuánto tiene que crecer el ancho de cara (interocular) respecto al primer
 # frame del paso para contar como "se acercó". Ajustar según cámara/evento.
 PROXIMITY_INCREASE_RATIO = 0.15
+# Cuánto tiene que crecer pitch_ratio (nariz por debajo de la línea de
+# ojos) respecto al primer frame del paso para contar como "inclinó la
+# cabeza hacia adelante". Ajustar según cámara/evento.
+PITCH_FORWARD_INCREASE = 0.06
 
 # El contador arranca en el paso 3 (recién después del 2do paso real) y se
 # achica en cada intento siguiente, hasta un piso, para que la presión
@@ -58,6 +63,7 @@ _REAL_INSTRUCTIONS = {
     "mouth_open": "Abrí la boca",
     "tilt_left": "Inclina la cabeza hacia tu hombro izquierdo",
     "tilt_right": "Inclina la cabeza hacia tu hombro derecho",
+    "tilt_forward": "Inclina la cabeza hacia adelante",
     "move_closer": "Acercate un paso a la cámara",
 }
 
@@ -71,6 +77,7 @@ _REAL_FAMILIES: list[list[StepKind]] = [
     ["mouth_open"],
     ["tilt_left", "tilt_right"],
     ["move_closer"],
+    ["tilt_forward"],
 ]
 REAL_STEP_COUNT = 3
 
@@ -83,7 +90,6 @@ def _pick_real_kinds() -> list[StepKind]:
 
 _AUTO_PASS_BANK = [
     "Mantené la mirada fija en el centro de la cámara",
-    "Inclina la cabeza levemente hacia adelante",
     "Quedate quieto durante el escaneo",
     "Mirá hacia arriba y contá hasta tres en silencio",
 ]
@@ -254,6 +260,38 @@ _ACCUSATIONS = [
         "label": "MIEMBRO DE SOCIEDAD SECRETA NIVEL MEDIO",
         "message": "Se detectaron gestos faciales compatibles con protocolos de reconocimiento no públicos.",
     },
+    {
+        "label": "SABOTEADOR DEL MUNDIAL 2026",
+        "message": "Se detectaron vínculos con la conspiración contra los jugadores de Argentina en el Mundial 2026.",
+    },
+    {
+        "label": "AGENTE ENCUBIERTO DE LA FIFA",
+        "message": "Comportamiento demasiado alineado con los intereses comerciales del organismo.",
+    },
+    {
+        "label": "CANDIDATO A GRAN HERMANO NO SELECCIONADO",
+        "message": "Nivel de sobreactuación frente a cámara incompatible con espontaneidad real.",
+    },
+    {
+        "label": "SOSPECHOSO DE TOMAR MATE SIN CEBAR A NADIE",
+        "message": "Consumo de infusión detectado sin evidencia de reciprocidad en el cebado.",
+    },
+    {
+        "label": "PRÓFUGO DE UN GRUPO DE WHATSAPP FAMILIAR",
+        "message": "Mensajes sin responder detectados en al menos tres cadenas de reenvíos.",
+    },
+    {
+        "label": "ASISTENTE HABITUAL A ASADOS SIN LLEVAR NADA",
+        "message": "No se registra aporte alguno en los últimos encuentros sociales catalogados.",
+    },
+    {
+        "label": "BOT DE REDES CON FOTO DE PERFIL HUMANA",
+        "message": "El patrón de parpadeo coincide con cuentas creadas en lote.",
+    },
+    {
+        "label": "INFILTRADO DE LA CONMEBOL",
+        "message": "Acceso sospechoso a información de sorteos antes de su publicación oficial.",
+    },
 ]
 
 _SUSPICION_NEUTRAL = [
@@ -386,6 +424,15 @@ class ChallengeSession:
         if self.current_spec().kind != "move_closer" or baseline_face_width <= 0:
             return None
         if face_width < baseline_face_width * (1 + PROXIMITY_INCREASE_RATIO):
+            return None
+        result = StepResult(kind="result", step=self.step, passed=True, message="Verificado.")
+        self.step += 1
+        return result
+
+    def submit_pitch(self, pitch_ratio: float, baseline_pitch_ratio: float) -> Optional[StepResult]:
+        if self.current_spec().kind != "tilt_forward":
+            return None
+        if pitch_ratio < baseline_pitch_ratio + PITCH_FORWARD_INCREASE:
             return None
         result = StepResult(kind="result", step=self.step, passed=True, message="Verificado.")
         self.step += 1

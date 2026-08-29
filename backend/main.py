@@ -120,9 +120,11 @@ async def _scan_and_measure_motion(
 async def _run_real_step(
     sender: Sender, session: ChallengeSession, detector: FaceGestureDetector, kind: str
 ) -> None:
-    """Espera el gesto real (parpadeo/giro) y recién resuelve pasados
+    """Espera el gesto real (parpadeo/giro/etc) y recién resuelve pasados
     MIN_STEP_SECONDS, aunque se detecte antes — mismo motivo que arriba."""
     start = time.monotonic()
+    baseline_face_width: float | None = None
+
     while True:
         frame = await sender.receive_frame()
         if frame is None:
@@ -138,8 +140,13 @@ async def _run_real_step(
             result = session.submit_yaw(signals.yaw)
         elif kind in ("tilt_left", "tilt_right"):
             result = session.submit_tilt(signals.roll_degrees)
-        else:
+        elif kind == "mouth_open":
             result = session.submit_mouth_open(signals.mouth_aspect_ratio)
+        else:
+            if baseline_face_width is None:
+                baseline_face_width = signals.face_width
+                continue
+            result = session.submit_proximity(signals.face_width, baseline_face_width)
         if result:
             elapsed = time.monotonic() - start
             if elapsed < MIN_STEP_SECONDS:
@@ -170,7 +177,7 @@ async def verify(websocket: WebSocket) -> None:
         while session.step <= TOTAL_STEPS:
             spec = session.current_spec()
 
-            if spec.kind in ("blink", "yaw_left", "yaw_right", "mouth_open", "tilt_left", "tilt_right"):
+            if spec.kind not in ("auto_pass", "reject"):
                 await _run_real_step(sender, session, detector, spec.kind)
             elif spec.kind == "auto_pass":
                 await _scan_and_measure_motion(sender, detector, session.current_duration())

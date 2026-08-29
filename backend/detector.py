@@ -62,6 +62,7 @@ class FrameSignals:
     yaw: float
     roll_degrees: float
     mouth_aspect_ratio: float
+    face_width: float
     blink_count: int
 
 
@@ -126,6 +127,7 @@ class FaceGestureDetector:
             yaw=yaw,
             roll_degrees=roll_degrees,
             mouth_aspect_ratio=mouth_aspect_ratio,
+            face_width=face_width,
             blink_count=self._blink_count,
         )
 

@@ -17,13 +17,24 @@ from dataclasses import dataclass, field
 from typing import Literal, Optional
 
 StepKind = Literal[
-    "blink", "yaw_left", "yaw_right", "mouth_open", "tilt_left", "tilt_right", "auto_pass", "reject"
+    "blink",
+    "yaw_left",
+    "yaw_right",
+    "mouth_open",
+    "tilt_left",
+    "tilt_right",
+    "move_closer",
+    "auto_pass",
+    "reject",
 ]
 
 TOTAL_STEPS = 10
 YAW_TURN_THRESHOLD = 0.18
 TILT_THRESHOLD_DEGREES = 12.0
 MOUTH_OPEN_THRESHOLD = 0.5
+# Cuánto tiene que crecer el ancho de cara (interocular) respecto al primer
+# frame del paso para contar como "se acercó". Ajustar según cámara/evento.
+PROXIMITY_INCREASE_RATIO = 0.15
 
 # El contador arranca en el paso 3 (recién después del 2do paso real) y se
 # achica en cada intento siguiente, hasta un piso, para que la presión
@@ -47,6 +58,7 @@ _REAL_INSTRUCTIONS = {
     "mouth_open": "Abrí la boca",
     "tilt_left": "Inclina la cabeza hacia tu hombro izquierdo",
     "tilt_right": "Inclina la cabeza hacia tu hombro derecho",
+    "move_closer": "Acercate un paso a la cámara",
 }
 
 # Familias de gestos reales: cada sesión elige REAL_STEP_COUNT familias al
@@ -58,6 +70,7 @@ _REAL_FAMILIES: list[list[StepKind]] = [
     ["yaw_left", "yaw_right"],
     ["mouth_open"],
     ["tilt_left", "tilt_right"],
+    ["move_closer"],
 ]
 REAL_STEP_COUNT = 3
 
@@ -70,7 +83,6 @@ def _pick_real_kinds() -> list[StepKind]:
 
 _AUTO_PASS_BANK = [
     "Mantené la mirada fija en el centro de la cámara",
-    "Acercate un paso a la cámara, despacio",
     "Inclina la cabeza levemente hacia adelante",
     "Quedate quieto durante el escaneo",
     "Mirá hacia arriba y contá hasta tres en silencio",
@@ -365,6 +377,15 @@ class ChallengeSession:
         elif spec.kind == "tilt_right" and roll_degrees > TILT_THRESHOLD_DEGREES:
             pass
         else:
+            return None
+        result = StepResult(kind="result", step=self.step, passed=True, message="Verificado.")
+        self.step += 1
+        return result
+
+    def submit_proximity(self, face_width: float, baseline_face_width: float) -> Optional[StepResult]:
+        if self.current_spec().kind != "move_closer" or baseline_face_width <= 0:
+            return None
+        if face_width < baseline_face_width * (1 + PROXIMITY_INCREASE_RATIO):
             return None
         result = StepResult(kind="result", step=self.step, passed=True, message="Verificado.")
         self.step += 1

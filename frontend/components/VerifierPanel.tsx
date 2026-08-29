@@ -28,8 +28,8 @@ export function VerifierPanel({
   meshConnections,
 }: VerifierPanelProps) {
   return (
-    <div className="flex h-screen flex-col items-center justify-center gap-2 overflow-hidden px-4 py-3">
-      <header className="flex w-full max-w-sm items-center justify-between font-mono text-xs tracking-widest text-accent">
+    <div className="flex h-screen flex-col items-center overflow-hidden px-4 py-3">
+      <header className="flex w-full max-w-sm shrink-0 items-center justify-between font-mono text-xs tracking-widest text-accent">
         <span>HUMAN PROTOCOL</span>
         <div className="flex items-center gap-2">
           <span className="text-muted">
@@ -39,32 +39,34 @@ export function VerifierPanel({
         </div>
       </header>
 
-      {/* Todo empaquetado sin espacios sueltos: si sobra alto, el margen
-          va arriba/abajo del bloque entero (por el justify-center de
-          arriba), no como huecos entre la cámara y el resto. */}
-      <div className="flex h-8 shrink-0 items-center justify-center">
-        {instructionDuration !== null && (
-          <Countdown
-            key={`${step}-${instruction}-${instructionDuration}`}
-            seconds={instructionDuration}
-          />
-        )}
+      {/* Header y footer quedan pegados a los bordes; este bloque absorbe
+          todo el espacio del medio y centra su contenido ahí adentro, sin
+          huecos sueltos entre la cámara y el resto (gap-2 fijo). */}
+      <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-2">
+        <div className="flex h-8 shrink-0 items-center justify-center">
+          {instructionDuration !== null && (
+            <Countdown
+              key={`${step}-${instruction}-${instructionDuration}`}
+              seconds={instructionDuration}
+            />
+          )}
+        </div>
+        <p className="line-clamp-3 min-h-[4.5rem] w-full max-w-sm shrink-0 text-center text-2xl font-bold sm:text-3xl">
+          {instruction}
+        </p>
+        <CameraFeed
+          active
+          onFrame={onFrame}
+          meshPoints={meshPoints}
+          meshConnections={meshConnections}
+        />
+        <div className="flex min-h-8 shrink-0 items-center justify-center">
+          <StatusLine result={lastResult} />
+        </div>
+        <ProgressDots step={step} total={TOTAL_STEPS} />
       </div>
-      <p className="line-clamp-3 min-h-[4.5rem] w-full max-w-sm shrink-0 text-center text-2xl font-bold sm:text-3xl">
-        {instruction}
-      </p>
-      <CameraFeed
-        active
-        onFrame={onFrame}
-        meshPoints={meshPoints}
-        meshConnections={meshConnections}
-      />
-      <div className="flex min-h-8 shrink-0 items-center justify-center">
-        <StatusLine result={lastResult} />
-      </div>
-      <ProgressDots step={step} total={TOTAL_STEPS} />
 
-      <div className="flex w-full max-w-sm flex-col items-center gap-2">
+      <div className="flex w-full max-w-sm shrink-0 flex-col items-center gap-2">
         <SuspicionLog lines={suspicionLog} />
         <footer className="flex w-full justify-between font-mono text-[0.625rem] tracking-widest text-muted">
           <span>v4.02 // ALGORITHMIC_GOVERNANCE_SYSTEM</span>

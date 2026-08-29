@@ -14,22 +14,26 @@ export function RevealScreen({ variant, label, message, onRestart }: RevealScree
   const toneColor = isConfirmed ? "text-accent" : "text-danger";
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center gap-6 overflow-hidden px-6 text-center">
+    <div className="flex h-screen flex-col items-center overflow-hidden px-6 py-6 text-center">
       <RevealSound variant={variant} />
-      <div className="flex w-full max-w-sm items-center justify-center gap-2">
+      <div className="flex w-full max-w-sm shrink-0 items-center justify-center gap-2">
         <span className="font-mono text-xs tracking-widest text-accent">HUMAN PROTOCOL</span>
         <MuteButton />
       </div>
-      {isConfirmed ? <CheckIcon /> : <WarningIcon />}
-      <h1 className={`text-2xl font-bold tracking-wide ${toneColor}`}>{label}</h1>
-      <p className="max-w-sm text-sm leading-relaxed text-muted">{message}</p>
-      <button
-        onClick={onRestart}
-        className="rounded-full border border-accent px-6 py-2 font-mono text-xs tracking-widest text-accent transition hover:bg-accent hover:text-background"
-      >
-        REINICIAR
-      </button>
-      <footer className="mt-8 flex w-full max-w-sm justify-between font-mono text-[0.625rem] tracking-widest text-muted">
+
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-6">
+        {isConfirmed ? <CheckIcon /> : <WarningIcon />}
+        <h1 className={`text-2xl font-bold tracking-wide ${toneColor}`}>{label}</h1>
+        <p className="max-w-sm text-sm leading-relaxed text-muted">{message}</p>
+        <button
+          onClick={onRestart}
+          className="rounded-full border border-accent px-6 py-2 font-mono text-xs tracking-widest text-accent transition hover:bg-accent hover:text-background"
+        >
+          REINICIAR
+        </button>
+      </div>
+
+      <footer className="flex w-full max-w-sm shrink-0 justify-between font-mono text-[0.625rem] tracking-widest text-muted">
         <span>v4.02 // ALGORITHMIC_GOVERNANCE_SYSTEM</span>
         <span>PROTOCOL_ISO_9001</span>
       </footer>

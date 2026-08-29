@@ -8,6 +8,7 @@ interface UseYouTubeAudioOptions {
   videoId: string;
   loop?: boolean;
   startSeconds?: number;
+  muted?: boolean;
 }
 
 /** Reproduce audio de YouTube (oculto) mientras `active` sea true.
@@ -23,9 +24,22 @@ export function useYouTubeAudio({
   videoId,
   loop = false,
   startSeconds = 0,
+  muted = false,
 }: UseYouTubeAudioOptions) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
+  const mutedRef = useRef(muted);
+
+  // Togglear mute no debe reiniciar la reproducción: efecto separado del
+  // que crea el player, y no dispara su dependencia.
+  useEffect(() => {
+    mutedRef.current = muted;
+    if (muted) {
+      playerRef.current?.mute();
+    } else {
+      playerRef.current?.unMute();
+    }
+  }, [muted]);
 
   useEffect(() => {
     if (!active || !wrapperRef.current) return;
@@ -38,7 +52,13 @@ export function useYouTubeAudio({
       if (cancelled || !window.YT) return;
       playerRef.current = new window.YT.Player(target, {
         videoId,
-        playerVars: { autoplay: 1, start: startSeconds, controls: 0, disablekb: 1 },
+        playerVars: {
+          autoplay: 1,
+          start: startSeconds,
+          controls: 0,
+          disablekb: 1,
+          mute: mutedRef.current ? 1 : 0,
+        },
         events: {
           onStateChange: (event) => {
             if (loop && event.data === window.YT?.PlayerState.ENDED) {

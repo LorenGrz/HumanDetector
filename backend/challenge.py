@@ -24,6 +24,7 @@ StepKind = Literal[
     "tilt_left",
     "tilt_right",
     "tilt_forward",
+    "look_up",
     "move_closer",
     "auto_pass",
     "reject",
@@ -36,17 +37,18 @@ MOUTH_OPEN_THRESHOLD = 0.5
 # Cuánto tiene que crecer el ancho de cara (interocular) respecto al primer
 # frame del paso para contar como "se acercó". Ajustar según cámara/evento.
 PROXIMITY_INCREASE_RATIO = 0.15
-# Cuánto tiene que crecer pitch_ratio (nariz por debajo de la línea de
-# ojos) respecto al primer frame del paso para contar como "inclinó la
-# cabeza hacia adelante". Ajustar según cámara/evento.
+# Cuánto tiene que crecer (inclinar adelante) o bajar (mirar arriba)
+# pitch_ratio respecto al primer frame del paso. Ajustar según cámara/evento.
 PITCH_FORWARD_INCREASE = 0.06
+LOOK_UP_DECREASE = 0.06
 
 # El contador arranca en el paso 3 (recién después del 2do paso real) y se
 # achica en cada intento siguiente, hasta un piso, para que la presión
-# suba de forma exponencial en vez de aparecer de golpe.
+# suba de forma exponencial en vez de aparecer de golpe. El piso no baja de
+# 4s: con textos largos, menos que eso no alcanza ni para leer la consigna.
 PRESSURE_START_SECONDS = 9.0
 PRESSURE_STEP_SECONDS = 1.0
-PRESSURE_FLOOR_SECONDS = 3.0
+PRESSURE_FLOOR_SECONDS = 4.0
 
 # Energía de movimiento (suma de desplazamientos de landmarks normalizados
 # durante la ventana del intento) necesaria para que "siga el ritmo". No
@@ -64,6 +66,7 @@ _REAL_INSTRUCTIONS = {
     "tilt_left": "Inclina la cabeza hacia tu hombro izquierdo",
     "tilt_right": "Inclina la cabeza hacia tu hombro derecho",
     "tilt_forward": "Inclina la cabeza hacia adelante",
+    "look_up": "Mirá hacia arriba",
     "move_closer": "Acercate un paso a la cámara",
 }
 
@@ -78,6 +81,7 @@ _REAL_FAMILIES: list[list[StepKind]] = [
     ["tilt_left", "tilt_right"],
     ["move_closer"],
     ["tilt_forward"],
+    ["look_up"],
 ]
 REAL_STEP_COUNT = 3
 
@@ -91,7 +95,6 @@ def _pick_real_kinds() -> list[StepKind]:
 _AUTO_PASS_BANK = [
     "Mantené la mirada fija en el centro de la cámara",
     "Quedate quieto durante el escaneo",
-    "Mirá hacia arriba y contá hasta tres en silencio",
 ]
 
 # Agrupado en secciones de dificultad (leve -> media -> imposible). Cada
@@ -302,6 +305,70 @@ _SUSPICION_NEUTRAL = [
     "Midiendo simetría facial...",
 ]
 
+# Comentario específico por cada gesto real, para que la sospecha en vivo
+# no sea genérica ni siquiera en los pasos "fáciles".
+_SUSPICION_BY_REAL_KIND: dict[str, list[str]] = {
+    "blink": [
+        "Contando parpadeos... el ritmo es sospechosamente parejo.",
+        "Frecuencia de parpadeo dentro de rango, por ahora.",
+        "Cada parpadeo se registra y se compara con la base de datos.",
+    ],
+    "yaw_left": [
+        "Girando... el eje de rotación es demasiado preciso.",
+        "Movimiento de cabeza mecánicamente perfecto. Anotado.",
+        "Verificando eje de rotación cervical.",
+    ],
+    "yaw_right": [
+        "Girando hacia el otro lado. Simetría sospechosa.",
+        "El giro es fluido. Demasiado fluido.",
+        "Verificando eje de rotación cervical.",
+    ],
+    "mouth_open": [
+        "Apertura mandibular dentro de parámetros... por ahora.",
+        "¿Eso fue un bostezo real o simulado?",
+        "Midiendo amplitud bucal.",
+    ],
+    "tilt_left": [
+        "Inclinación lateral en curso. Vértebras bajo observación.",
+        "El cuello se dobla en un ángulo sospechosamente cómodo.",
+        "Calculando centro de gravedad craneal.",
+    ],
+    "tilt_right": [
+        "Inclinación hacia el otro lado. Todo demasiado simétrico.",
+        "El equilibrio no se altera. Sospechoso.",
+        "Verificando flexibilidad cervical.",
+    ],
+    "tilt_forward": [
+        "La cabeza baja. El sistema sigue mirando.",
+        "Inclinación frontal detectada. Analizando intención.",
+        "¿Reverencia o maniobra evasiva? Indeterminado.",
+    ],
+    "look_up": [
+        "Mmm... te estás moviendo.",
+        "La mirada sube, la sospecha también.",
+        "Buscando algo en el techo, o eso dice.",
+    ],
+    "move_closer": [
+        "Acercamiento detectado. Reduciendo distancia de seguridad.",
+        "Cuanto más cerca, más se ve. Eso no ayuda.",
+        "El sujeto invade el espacio de escaneo. Continuando.",
+    ],
+}
+
+# Comentario específico por cada instrucción teatral (auto_pass).
+_SUSPICION_BY_AUTO_PASS_TEXT: dict[str, list[str]] = {
+    "Mantené la mirada fija en el centro de la cámara": [
+        "La mirada no se despega. Persistente.",
+        "Fijación ocular prolongada. Anotado para revisión.",
+        "¿Está mirando la cámara o algo detrás de ella?",
+    ],
+    "Quedate quieto durante el escaneo": [
+        "Mmm... te estás moviendo.",
+        "Se detecta microtemblor. Nadie está tan quieto.",
+        "La inmovilidad total tampoco es normal, para que sepa.",
+    ],
+}
+
 _SUSPICION_CRITICAL = [
     "Sospecha de origen no humano: alta...",
     "Iniciando protocolo de reclasificación...",
@@ -346,9 +413,15 @@ def _build_plan() -> list[StepSpec]:
     # reales de base, fail_start >= 5 asegura ese mínimo de 4.
     fail_start = random.choice([5, 6])
 
-    plan = [StepSpec(kind=k, text=_REAL_INSTRUCTIONS[k]) for k in real_kinds]
+    plan = [
+        StepSpec(kind=k, text=_REAL_INSTRUCTIONS[k], suspicion_bank=_SUSPICION_BY_REAL_KIND[k])
+        for k in real_kinds
+    ]
     while len(plan) < fail_start - 1:
-        plan.append(StepSpec(kind="auto_pass", text=random.choice(_AUTO_PASS_BANK)))
+        text = random.choice(_AUTO_PASS_BANK)
+        plan.append(
+            StepSpec(kind="auto_pass", text=text, suspicion_bank=_SUSPICION_BY_AUTO_PASS_TEXT[text])
+        )
 
     for entry in _pick_reject_entries(TOTAL_STEPS - len(plan)):
         plan.append(StepSpec(kind="reject", text=entry["text"], suspicion_bank=entry["suspicion_bank"]))
@@ -379,13 +452,12 @@ class ChallengeSession:
         )
 
     def suspicion_line(self) -> str:
-        """Comentario random y específico del intento actual."""
+        """Comentario random y específico del intento actual: cada paso
+        (real, teatral o de rechazo) tiene su propio banco de frases."""
         spec = self.current_spec()
         if spec.kind == "reject" and self.step >= TOTAL_STEPS - 1:
             return random.choice(_SUSPICION_CRITICAL)
-        if spec.kind == "reject":
-            return random.choice(spec.suspicion_bank)
-        return random.choice(_SUSPICION_NEUTRAL)
+        return random.choice(spec.suspicion_bank)
 
     def instruction(self) -> StepResult:
         spec = self.current_spec()
@@ -437,6 +509,15 @@ class ChallengeSession:
         if self.current_spec().kind != "tilt_forward":
             return None
         if pitch_ratio < baseline_pitch_ratio + PITCH_FORWARD_INCREASE:
+            return None
+        result = StepResult(kind="result", step=self.step, passed=True, message="Verificado.")
+        self.step += 1
+        return result
+
+    def submit_look_up(self, pitch_ratio: float, baseline_pitch_ratio: float) -> Optional[StepResult]:
+        if self.current_spec().kind != "look_up":
+            return None
+        if pitch_ratio > baseline_pitch_ratio - LOOK_UP_DECREASE:
             return None
         result = StepResult(kind="result", step=self.step, passed=True, message="Verificado.")
         self.step += 1

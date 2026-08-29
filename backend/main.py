@@ -143,11 +143,15 @@ async def _run_real_step(
             result = session.submit_tilt(signals.roll_degrees)
         elif kind == "mouth_open":
             result = session.submit_mouth_open(signals.mouth_aspect_ratio)
-        elif kind == "tilt_forward":
+        elif kind in ("tilt_forward", "look_up"):
             if baseline_pitch_ratio is None:
                 baseline_pitch_ratio = signals.pitch_ratio
                 continue
-            result = session.submit_pitch(signals.pitch_ratio, baseline_pitch_ratio)
+            result = (
+                session.submit_pitch(signals.pitch_ratio, baseline_pitch_ratio)
+                if kind == "tilt_forward"
+                else session.submit_look_up(signals.pitch_ratio, baseline_pitch_ratio)
+            )
         else:
             if baseline_face_width is None:
                 baseline_face_width = signals.face_width

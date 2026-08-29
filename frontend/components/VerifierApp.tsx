@@ -6,12 +6,23 @@ import { VerifierPanel } from "./VerifierPanel";
 import { RevealScreen } from "./RevealScreen";
 import { BackgroundAudio } from "./BackgroundAudio";
 import { WelcomeScreen } from "./WelcomeScreen";
+import { MuteButton } from "./MuteButton";
+import { MuteProvider } from "@/contexts/MuteContext";
 
 const ELEVATOR_VIDEO_ID = "jj0ChLVTpaA"; // Elevator Music — antes de empezar
 const ALIEN_VIDEO_ID = "1RbsgMntwsQ"; // Música de extraterrestres — durante el test
 const ALIEN_START_SECONDS = 14;
 
 export function VerifierApp() {
+  return (
+    <MuteProvider>
+      <MuteButton />
+      <VerifierFlow />
+    </MuteProvider>
+  );
+}
+
+function VerifierFlow() {
   const [started, setStarted] = useState(false);
 
   if (!started) {

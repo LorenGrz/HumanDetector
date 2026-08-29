@@ -1,6 +1,8 @@
 export interface YouTubePlayer {
   playVideo(): void;
   seekTo(seconds: number, allowSeekAhead: boolean): void;
+  mute(): void;
+  unMute(): void;
   destroy(): void;
 }
 

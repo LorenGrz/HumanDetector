@@ -1,0 +1,24 @@
+# CodeBuild: construye la imagen del backend y la sube a ECR.
+# Se usa cuando el push directo a ECR desde la máquina local no es viable
+# (red que bloquea el data plane de ECR). Lo dispara backend/deploy/build-remote.sh.
+version: 0.2
+
+env:
+  variables:
+    AWS_REGION: us-east-1
+    ECR_REPO: humandetector-backend
+    IMAGE_TAG: latest
+
+phases:
+  pre_build:
+    commands:
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - ECR_URI="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}"
+      - aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+  build:
+    commands:
+      - docker build --platform linux/amd64 -t "${ECR_URI}:${IMAGE_TAG}" .
+  post_build:
+    commands:
+      - docker push "${ECR_URI}:${IMAGE_TAG}"
+      - echo "Pushed ${ECR_URI}:${IMAGE_TAG}"

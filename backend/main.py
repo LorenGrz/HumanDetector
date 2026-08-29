@@ -3,6 +3,7 @@ import base64
 import dataclasses
 import logging
 import math
+import os
 import random
 import time
 
@@ -19,12 +20,27 @@ logger = logging.getLogger("verifier")
 
 app = FastAPI()
 
+# Orígenes permitidos: localhost para desarrollo + lo que se pase por env en
+# producción (el frontend en GitHub Pages). No gatea el handshake del WebSocket,
+# pero deja el CORS correcto si alguna vez se agregan rutas HTTP.
+_allowed_origins = ["http://localhost:3000"]
+_frontend_origin = os.getenv("FRONTEND_ORIGIN")
+if _frontend_origin:
+    _allowed_origins.append(_frontend_origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=_allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/")
+@app.get("/healthz")
+async def healthz() -> dict:
+    """Health check para App Runner (necesita una ruta HTTP que devuelva 200)."""
+    return {"status": "ok"}
 
 SUSPICION_INTERVAL_RANGE = (1.6, 2.4)
 MIN_STEP_SECONDS = 3.0

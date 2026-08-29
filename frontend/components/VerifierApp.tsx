@@ -6,7 +6,6 @@ import { VerifierPanel } from "./VerifierPanel";
 import { RevealScreen } from "./RevealScreen";
 import { BackgroundAudio } from "./BackgroundAudio";
 import { WelcomeScreen } from "./WelcomeScreen";
-import { MuteButton } from "./MuteButton";
 import { MuteProvider } from "@/contexts/MuteContext";
 
 const ELEVATOR_VIDEO_ID = "jj0ChLVTpaA"; // Elevator Music — antes de empezar
@@ -16,7 +15,6 @@ const ALIEN_START_SECONDS = 14;
 export function VerifierApp() {
   return (
     <MuteProvider>
-      <MuteButton />
       <VerifierFlow />
     </MuteProvider>
   );
@@ -86,7 +84,7 @@ function ActiveVerifier() {
 
 function StatusScreen({ disconnected, onRetry }: { disconnected: boolean; onRetry: () => void }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
+    <div className="flex h-screen flex-col items-center justify-center gap-4 overflow-hidden px-6 text-center">
       <span className="font-mono text-xs tracking-widest text-accent">HUMAN PROTOCOL</span>
       <p className="text-sm text-muted">
         {disconnected ? "Conexión perdida con el sistema." : "Conectando con el sistema..."}

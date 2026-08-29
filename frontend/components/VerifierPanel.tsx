@@ -1,6 +1,7 @@
 import { CameraFeed } from "./CameraFeed";
 import { Countdown } from "./Countdown";
 import { SuspicionLog } from "./SuspicionLog";
+import { MuteButton } from "./MuteButton";
 
 const TOTAL_STEPS = 10;
 
@@ -26,16 +27,19 @@ export function VerifierPanel({
   meshConnections,
 }: VerifierPanelProps) {
   return (
-    <div className="flex min-h-screen flex-col items-center gap-4 overflow-y-auto px-6 pt-16 pb-8">
+    <div className="flex h-screen flex-col items-center gap-2 overflow-hidden px-4 py-3">
       <header className="flex w-full max-w-sm items-center justify-between font-mono text-xs tracking-widest text-accent">
         <span>HUMAN PROTOCOL</span>
-        <span className="text-muted">
-          {String(step).padStart(2, "0")}/{TOTAL_STEPS}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-muted">
+            {String(step).padStart(2, "0")}/{TOTAL_STEPS}
+          </span>
+          <MuteButton />
+        </div>
       </header>
 
-      <div className="flex w-full max-w-sm flex-1 flex-col items-center gap-3">
-        <div className="flex h-9 items-center justify-center">
+      <div className="flex w-full flex-1 flex-col items-center justify-center gap-2 overflow-hidden">
+        <div className="flex h-8 items-center justify-center">
           {instructionDuration !== null && (
             <Countdown
               key={`${step}-${instruction}-${instructionDuration}`}
@@ -43,20 +47,22 @@ export function VerifierPanel({
             />
           )}
         </div>
-        <p className="line-clamp-3 min-h-[6.75rem] text-center text-3xl font-bold">{instruction}</p>
+        <p className="line-clamp-3 min-h-[4.5rem] w-full max-w-sm text-center text-2xl font-bold sm:text-3xl">
+          {instruction}
+        </p>
         <CameraFeed
           active
           onFrame={onFrame}
           meshPoints={meshPoints}
           meshConnections={meshConnections}
         />
-        <div className="flex min-h-10 items-center justify-center">
+        <div className="flex min-h-8 items-center justify-center">
           <StatusLine result={lastResult} />
         </div>
         <ProgressDots step={step} total={TOTAL_STEPS} />
       </div>
 
-      <div className="flex w-full max-w-sm flex-col items-center gap-3">
+      <div className="flex w-full max-w-sm flex-col items-center gap-2">
         <SuspicionLog lines={suspicionLog} />
         <footer className="flex w-full justify-between font-mono text-[0.625rem] tracking-widest text-muted">
           <span>v4.02 // ALGORITHMIC_GOVERNANCE_SYSTEM</span>

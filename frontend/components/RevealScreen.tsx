@@ -1,5 +1,6 @@
 import type { RevealVariant } from "@/types/protocol";
 import { RevealSound } from "./RevealSound";
+import { MuteButton } from "./MuteButton";
 
 interface RevealScreenProps {
   variant: RevealVariant;
@@ -13,9 +14,12 @@ export function RevealScreen({ variant, label, message, onRestart }: RevealScree
   const toneColor = isConfirmed ? "text-accent" : "text-danger";
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
+    <div className="flex h-screen flex-col items-center justify-center gap-6 overflow-hidden px-6 text-center">
       <RevealSound variant={variant} />
-      <span className="font-mono text-xs tracking-widest text-accent">HUMAN PROTOCOL</span>
+      <div className="flex w-full max-w-sm items-center justify-center gap-2">
+        <span className="font-mono text-xs tracking-widest text-accent">HUMAN PROTOCOL</span>
+        <MuteButton />
+      </div>
       {isConfirmed ? <CheckIcon /> : <WarningIcon />}
       <h1 className={`text-2xl font-bold tracking-wide ${toneColor}`}>{label}</h1>
       <p className="max-w-sm text-sm leading-relaxed text-muted">{message}</p>

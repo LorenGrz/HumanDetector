@@ -1,11 +1,16 @@
+import { MuteButton } from "./MuteButton";
+
 interface WelcomeScreenProps {
   onStart: () => void;
 }
 
 export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
-      <span className="font-mono text-xs tracking-widest text-accent">HUMAN PROTOCOL</span>
+    <div className="flex h-screen flex-col items-center justify-center gap-6 overflow-hidden px-6 text-center">
+      <div className="flex w-full max-w-sm items-center justify-center gap-2">
+        <span className="font-mono text-xs tracking-widest text-accent">HUMAN PROTOCOL</span>
+        <MuteButton />
+      </div>
       <h1 className="text-3xl font-bold tracking-wide">¿SOS HUMANO?</h1>
       <p className="max-w-sm text-sm leading-relaxed text-muted">
         Vas a tener que probarlo.

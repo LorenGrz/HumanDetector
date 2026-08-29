@@ -54,7 +54,7 @@ PRESSURE_FLOOR_SECONDS = 3.0
 # — así es difícil que pase incluso moviéndose mucho, y casi imposible que
 # pase dos veces seguidas. Ajustar umbral según cámara/luz del evento.
 MOTION_PASS_THRESHOLD = 10.0
-CONFIRM_PROBABILITY = 1 / 6
+CONFIRM_PROBABILITY = 1 / 5
 
 _REAL_INSTRUCTIONS = {
     "blink": "Parpadeá dos veces",
@@ -359,6 +359,10 @@ def _build_plan() -> list[StepSpec]:
 @dataclass
 class ChallengeSession:
     plan: list[StepSpec] = field(default_factory=_build_plan)
+    # Si la sesión anterior terminó en "confirmed", la siguiente arranca con
+    # esto en False para que no pueda tocar humano dos veces seguidas (lo
+    # maneja main.py entre conexiones).
+    allow_confirm: bool = True
     step: int = field(default=1, init=False)
     _pressure_index: int = field(default=0, init=False, repr=False)
 
@@ -457,12 +461,17 @@ class ChallengeSession:
 
         Moverse lo suficiente (MOTION_PASS_THRESHOLD) es necesario pero no
         alcanza: además hay que ganar un sorteo de CONFIRM_PROBABILITY
-        (1 en 6). Así es raro que un intento pase, y mucho más raro que
-        pasen dos seguidos. Si no pasa, rechaza y avanza — y si era el
-        último de los TOTAL_STEPS, dispara el veredicto final.
+        (1 en 5). Si allow_confirm es False (la sesión anterior ya dio
+        humano), no hay sorteo posible esta vez. Si no pasa, rechaza y
+        avanza — y si era el último de los TOTAL_STEPS, dispara el
+        veredicto final.
         """
         self._pressure_index += 1
-        passed = motion_score >= MOTION_PASS_THRESHOLD and random.random() < CONFIRM_PROBABILITY
+        passed = (
+            self.allow_confirm
+            and motion_score >= MOTION_PASS_THRESHOLD
+            and random.random() < CONFIRM_PROBABILITY
+        )
         is_last_step = self.step >= TOTAL_STEPS
 
         if passed:

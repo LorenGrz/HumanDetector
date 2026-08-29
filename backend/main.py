@@ -168,10 +168,14 @@ async def _suspicion_loop(sender: Sender, session: ChallengeSession) -> None:
         await sender.send({"kind": "suspicion", "text": session.suspicion_line()})
 
 
+_last_session_confirmed = False
+
+
 @app.websocket("/ws/verify")
 async def verify(websocket: WebSocket) -> None:
+    global _last_session_confirmed
     await websocket.accept()
-    session = ChallengeSession()
+    session = ChallengeSession(allow_confirm=not _last_session_confirmed)
     detector = FaceGestureDetector()
     sender = Sender(websocket)
     suspicion_task = asyncio.create_task(_suspicion_loop(sender, session))
@@ -198,6 +202,7 @@ async def verify(websocket: WebSocket) -> None:
                 result = session.resolve_reject(motion_score)
                 await sender.send_result(result)
                 if result.kind in ("reveal", "confirmed"):
+                    _last_session_confirmed = result.kind == "confirmed"
                     return
 
             if session.step <= TOTAL_STEPS:

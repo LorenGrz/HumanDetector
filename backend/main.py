@@ -170,7 +170,7 @@ async def verify(websocket: WebSocket) -> None:
         while session.step <= TOTAL_STEPS:
             spec = session.current_spec()
 
-            if spec.kind in ("blink", "yaw_left", "yaw_right"):
+            if spec.kind in ("blink", "yaw_left", "yaw_right", "mouth_open", "tilt_left", "tilt_right"):
                 await _run_real_step(sender, session, detector, spec.kind)
             elif spec.kind == "auto_pass":
                 await _scan_and_measure_motion(sender, detector, session.current_duration())

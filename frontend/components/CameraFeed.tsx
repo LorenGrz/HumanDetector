@@ -84,9 +84,6 @@ export function CameraFeed({ active, onFrame, meshPoints, meshConnections }: Cam
           <div className="absolute inset-x-0 h-1 bg-accent/70 shadow-[0_0_12px_2px_var(--accent)] animate-scan-line" />
         </div>
       )}
-      <span className="absolute top-2 right-2 rounded-full bg-black/60 px-2 py-1 font-mono text-[10px] tracking-widest text-accent">
-        LIVE FEED
-      </span>
       <canvas ref={canvasRef} className="hidden" />
     </div>
   );

@@ -439,6 +439,7 @@ class ChallengeSession:
     allow_confirm: bool = True
     step: int = field(default=1, init=False)
     _pressure_index: int = field(default=0, init=False, repr=False)
+    _last_suspicion_line: Optional[str] = field(default=None, init=False, repr=False)
 
     def current_spec(self) -> StepSpec:
         return self.plan[self.step - 1]
@@ -454,11 +455,20 @@ class ChallengeSession:
 
     def suspicion_line(self) -> str:
         """Comentario random y específico del intento actual: cada paso
-        (real, teatral o de rechazo) tiene su propio banco de frases."""
+        (real, teatral o de rechazo) tiene su propio banco de frases.
+
+        Nunca repite la frase anterior de inmediato (si el banco tiene más
+        de una opción)."""
         spec = self.current_spec()
-        if spec.kind == "reject" and self.step >= TOTAL_STEPS - 1:
-            return random.choice(_SUSPICION_CRITICAL)
-        return random.choice(spec.suspicion_bank)
+        bank = (
+            _SUSPICION_CRITICAL
+            if spec.kind == "reject" and self.step >= TOTAL_STEPS - 1
+            else spec.suspicion_bank
+        )
+        choices = [line for line in bank if line != self._last_suspicion_line] or bank
+        line = random.choice(choices)
+        self._last_suspicion_line = line
+        return line
 
     def instruction(self) -> StepResult:
         spec = self.current_spec()

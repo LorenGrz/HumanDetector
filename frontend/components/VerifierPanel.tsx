@@ -26,7 +26,7 @@ export function VerifierPanel({
   meshConnections,
 }: VerifierPanelProps) {
   return (
-    <div className="flex min-h-screen flex-col items-center gap-4 overflow-y-auto px-6 py-8">
+    <div className="flex min-h-screen flex-col items-center gap-4 overflow-y-auto px-6 pt-16 pb-8">
       <header className="flex w-full max-w-sm items-center justify-between font-mono text-xs tracking-widest text-accent">
         <span>HUMAN PROTOCOL</span>
         <span className="text-muted">
@@ -58,7 +58,7 @@ export function VerifierPanel({
 
       <div className="flex w-full max-w-sm flex-col items-center gap-3">
         <SuspicionLog lines={suspicionLog} />
-        <footer className="flex w-full justify-between font-mono text-[10px] tracking-widest text-muted">
+        <footer className="flex w-full justify-between font-mono text-[0.625rem] tracking-widest text-muted">
           <span>v4.02 // ALGORITHMIC_GOVERNANCE_SYSTEM</span>
           <span>PROTOCOL_ISO_9001</span>
         </footer>

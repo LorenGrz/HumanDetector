@@ -25,7 +25,7 @@ export function RevealScreen({ variant, label, message, onRestart }: RevealScree
       >
         REINICIAR
       </button>
-      <footer className="mt-8 flex w-full max-w-sm justify-between font-mono text-[10px] tracking-widest text-muted">
+      <footer className="mt-8 flex w-full max-w-sm justify-between font-mono text-[0.625rem] tracking-widest text-muted">
         <span>v4.02 // ALGORITHMIC_GOVERNANCE_SYSTEM</span>
         <span>PROTOCOL_ISO_9001</span>
       </footer>

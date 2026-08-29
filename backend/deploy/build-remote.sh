@@ -40,8 +40,4 @@ while true; do
   sleep 15
 done
 
-if [ -n "${SERVICE_ARN:-}" ]; then
-  echo ">> Disparando deploy en App Runner"
-  aws apprunner start-deployment --region "$AWS_REGION" --service-arn "$SERVICE_ARN" \
-    --query 'OperationId' --output text
-fi
+echo ">> Para recrear el contenedor en la instancia: backend/deploy/redeploy.sh"

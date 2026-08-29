@@ -7,11 +7,20 @@ import { RevealScreen } from "./RevealScreen";
 import { BackgroundAudio } from "./BackgroundAudio";
 import { WelcomeScreen } from "./WelcomeScreen";
 
+const ELEVATOR_VIDEO_ID = "jj0ChLVTpaA"; // Elevator Music — antes de empezar
+const ALIEN_VIDEO_ID = "1RbsgMntwsQ"; // Música de extraterrestres — durante el test
+const ALIEN_START_SECONDS = 14;
+
 export function VerifierApp() {
   const [started, setStarted] = useState(false);
 
   if (!started) {
-    return <WelcomeScreen onStart={() => setStarted(true)} />;
+    return (
+      <>
+        <BackgroundAudio active videoId={ELEVATOR_VIDEO_ID} />
+        <WelcomeScreen onStart={() => setStarted(true)} />
+      </>
+    );
   }
 
   return <ActiveVerifier />;
@@ -24,7 +33,11 @@ function ActiveVerifier() {
 
   return (
     <>
-      <BackgroundAudio active={state.phase === "verifying"} />
+      <BackgroundAudio
+        active={state.phase === "verifying"}
+        videoId={ALIEN_VIDEO_ID}
+        startSeconds={ALIEN_START_SECONDS}
+      />
       {renderScreen()}
     </>
   );

@@ -27,6 +27,7 @@ app.add_middleware(
 )
 
 SUSPICION_INTERVAL_RANGE = (1.6, 2.4)
+MIN_STEP_SECONDS = 3.0
 
 
 def _decode_frame(data_url: str) -> np.ndarray | None:
@@ -80,10 +81,11 @@ async def _scan_and_measure_motion(
     devuelve la energía de movimiento acumulada (para los pasos contra
     reloj: cuánto se movió la cara mientras duró la cuenta regresiva).
 
-    Si se pasa early_exit_threshold y se supera antes de que termine el
-    tiempo, corta ahí mismo — el paso se reconoce al toque en vez de
-    obligar a esperar el resto de la cuenta regresiva."""
-    deadline = time.monotonic() + seconds
+    Si se pasa early_exit_threshold y se supera, corta ahí mismo — pero
+    nunca antes de MIN_STEP_SECONDS, para que no se sienta instantáneo si
+    la persona ya venía moviéndose cuando arrancó el paso."""
+    start = time.monotonic()
+    deadline = start + seconds
     previous_points: list[tuple[float, float]] | None = None
     total_motion = 0.0
 
@@ -106,13 +108,21 @@ async def _scan_and_measure_motion(
             total_motion += _motion_energy(previous_points, signals.mesh_points)
         previous_points = signals.mesh_points
 
-        if early_exit_threshold is not None and total_motion >= early_exit_threshold:
+        elapsed = time.monotonic() - start
+        if (
+            early_exit_threshold is not None
+            and elapsed >= MIN_STEP_SECONDS
+            and total_motion >= early_exit_threshold
+        ):
             return total_motion
 
 
 async def _run_real_step(
     sender: Sender, session: ChallengeSession, detector: FaceGestureDetector, kind: str
 ) -> None:
+    """Espera el gesto real (parpadeo/giro) y recién resuelve pasados
+    MIN_STEP_SECONDS, aunque se detecte antes — mismo motivo que arriba."""
+    start = time.monotonic()
     while True:
         frame = await sender.receive_frame()
         if frame is None:
@@ -128,6 +138,9 @@ async def _run_real_step(
             else session.submit_yaw(signals.yaw)
         )
         if result:
+            elapsed = time.monotonic() - start
+            if elapsed < MIN_STEP_SECONDS:
+                await asyncio.sleep(MIN_STEP_SECONDS - elapsed)
             await sender.send_result(result)
             return
 

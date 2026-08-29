@@ -417,8 +417,9 @@ def _build_plan() -> list[StepSpec]:
         StepSpec(kind=k, text=_REAL_INSTRUCTIONS[k], suspicion_bank=_SUSPICION_BY_REAL_KIND[k])
         for k in real_kinds
     ]
-    while len(plan) < fail_start - 1:
-        text = random.choice(_AUTO_PASS_BANK)
+    auto_pass_pool = random.sample(_AUTO_PASS_BANK, k=len(_AUTO_PASS_BANK))
+    while len(plan) < fail_start - 1 and auto_pass_pool:
+        text = auto_pass_pool.pop()
         plan.append(
             StepSpec(kind="auto_pass", text=text, suspicion_bank=_SUSPICION_BY_AUTO_PASS_TEXT[text])
         )

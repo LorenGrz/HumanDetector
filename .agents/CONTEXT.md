@@ -117,14 +117,27 @@ No hay script de test automatizado en ninguno de los dos lados.
 
 - Backend en `http://localhost:8000` (WebSocket en `/ws/verify`).
 - Frontend en `http://localhost:3000`.
-- CORS del backend limitado a `http://localhost:3000` (`main.py`).
+- CORS del backend: localhost + lo que diga `FRONTEND_ORIGIN` (`main.py`).
 - `.claude/launch.json` define ambos servers para `preview_start`.
+
+## Deploy
+
+- **Frontend**: GitHub Pages en `https://lorengrz.github.io/HumanDetector/`.
+  Export estático (`next.config.ts` → `output: 'export'`, `basePath` desde
+  `NEXT_PUBLIC_BASE_PATH`). Workflow `.github/workflows/deploy-frontend.yml`
+  se dispara al pushear a `master` tocando `frontend/**`. La URL del backend
+  se hornea en build desde la variable de repo `VERIFIER_WS_URL`.
+- **Backend**: contenedor Docker en EC2 (`i-00cd99cf5a2f307eb`, us-east-1) +
+  Caddy con TLS Let's Encrypt para `44-221-206-139.nip.io`. Imagen en ECR,
+  construida con CodeBuild. Scripts en `backend/deploy/` (`start.sh` /
+  `stop.sh` / `status.sh` / `redeploy.sh`) y detalle en `backend/deploy/README.md`.
+  On-demand: se prende para el evento y se apaga después.
 
 ## Agent Notes
 
-- Repo público en GitHub: `LorenGrz/fe-de-vida`. Todo el trabajo de esta
-  sesión fue a la rama `feat/timed-escalation-and-audio` vía PR (no se
-  pushea directo a `master` sin confirmación explícita del usuario).
+- Repo público en GitHub: `LorenGrz/HumanDetector` (renombrado desde
+  `fe-de-vida` para servir en `lorengrz.github.io/HumanDetector`). No se
+  pushea directo a `master` sin confirmación explícita del usuario.
 - El usuario prueba con cámara real en su propia máquina; yo no tengo
   cámara en el entorno de preview, así que la detección de gestos
   específicos no se puede validar end-to-end de mi lado — solo la lógica

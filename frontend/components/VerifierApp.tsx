@@ -3,30 +3,47 @@
 import { useVerifierSession } from "@/hooks/useVerifierSession";
 import { VerifierPanel } from "./VerifierPanel";
 import { RevealScreen } from "./RevealScreen";
+import { BackgroundAudio } from "./BackgroundAudio";
 
 export function VerifierApp() {
   const { state, mesh, sendFrame, restart } = useVerifierSession();
 
-  if (state.phase === "reveal" && state.revealLabel && state.revealMessage) {
-    return (
-      <RevealScreen label={state.revealLabel} message={state.revealMessage} onRestart={restart} />
-    );
-  }
+  return (
+    <>
+      <BackgroundAudio active={state.phase === "verifying"} />
+      {renderScreen()}
+    </>
+  );
 
-  if (state.phase === "verifying" && state.instruction && state.step) {
-    return (
-      <VerifierPanel
-        step={state.step}
-        instruction={state.instruction}
-        lastResult={state.lastResult}
-        onFrame={sendFrame}
-        meshPoints={mesh.points}
-        meshConnections={mesh.connections}
-      />
-    );
-  }
+  function renderScreen() {
+    if (state.phase === "reveal" && state.revealLabel && state.revealMessage) {
+      return (
+        <RevealScreen
+          variant={state.revealVariant}
+          label={state.revealLabel}
+          message={state.revealMessage}
+          onRestart={restart}
+        />
+      );
+    }
 
-  return <StatusScreen disconnected={state.phase === "disconnected"} onRetry={restart} />;
+    if (state.phase === "verifying" && state.instruction && state.step) {
+      return (
+        <VerifierPanel
+          step={state.step}
+          instruction={state.instruction}
+          instructionDuration={state.instructionDuration}
+          lastResult={state.lastResult}
+          suspicionLog={state.suspicionLog}
+          onFrame={sendFrame}
+          meshPoints={mesh.points}
+          meshConnections={mesh.connections}
+        />
+      );
+    }
+
+    return <StatusScreen disconnected={state.phase === "disconnected"} onRetry={restart} />;
+  }
 }
 
 function StatusScreen({ disconnected, onRetry }: { disconnected: boolean; onRetry: () => void }) {

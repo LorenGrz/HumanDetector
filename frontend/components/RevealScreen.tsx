@@ -1,15 +1,21 @@
+import type { RevealVariant } from "@/types/protocol";
+
 interface RevealScreenProps {
+  variant: RevealVariant;
   label: string;
   message: string;
   onRestart: () => void;
 }
 
-export function RevealScreen({ label, message, onRestart }: RevealScreenProps) {
+export function RevealScreen({ variant, label, message, onRestart }: RevealScreenProps) {
+  const isConfirmed = variant === "confirmed";
+  const toneColor = isConfirmed ? "text-accent" : "text-danger";
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
       <span className="font-mono text-xs tracking-widest text-accent">HUMAN PROTOCOL</span>
-      <WarningIcon />
-      <h1 className="text-2xl font-bold tracking-wide">{label}</h1>
+      {isConfirmed ? <CheckIcon /> : <WarningIcon />}
+      <h1 className={`text-2xl font-bold tracking-wide ${toneColor}`}>{label}</h1>
       <p className="max-w-sm text-sm leading-relaxed text-muted">{message}</p>
       <button
         onClick={onRestart}
@@ -39,6 +45,20 @@ function WarningIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-10 w-10 text-accent"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <path d="M4.5 12.75l6 6 9-13.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

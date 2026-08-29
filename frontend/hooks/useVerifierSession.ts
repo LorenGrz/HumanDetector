@@ -5,14 +5,18 @@ import { VerifierSocket } from "@/lib/verifierSocket";
 import type { MeshState, ServerMessage, VerifierState } from "@/types/protocol";
 
 const WS_URL = process.env.NEXT_PUBLIC_VERIFIER_WS_URL ?? "ws://localhost:8000/ws/verify";
+const SUSPICION_LOG_MAX = 3;
 
 const INITIAL_STATE: VerifierState = {
   phase: "connecting",
   step: null,
   instruction: null,
+  instructionDuration: null,
   lastResult: null,
+  revealVariant: "reject",
   revealLabel: null,
   revealMessage: null,
+  suspicionLog: [],
 };
 
 const INITIAL_MESH: MeshState = { connections: [], points: null };
@@ -25,6 +29,7 @@ function applyMessage(state: VerifierState, message: ServerMessage): VerifierSta
         phase: "verifying",
         step: message.step,
         instruction: message.text,
+        instructionDuration: message.duration,
         lastResult: null,
       };
     case "result":
@@ -33,8 +38,22 @@ function applyMessage(state: VerifierState, message: ServerMessage): VerifierSta
       return {
         ...state,
         phase: "reveal",
+        revealVariant: "reject",
         revealLabel: message.text,
         revealMessage: message.message,
+      };
+    case "confirmed":
+      return {
+        ...state,
+        phase: "reveal",
+        revealVariant: "confirmed",
+        revealLabel: message.text,
+        revealMessage: message.message,
+      };
+    case "suspicion":
+      return {
+        ...state,
+        suspicionLog: [...state.suspicionLog, message.text].slice(-SUSPICION_LOG_MAX),
       };
     default:
       return state;

@@ -68,7 +68,7 @@ export function CameraFeed({ active, onFrame, meshPoints, meshConnections }: Cam
   }, [active, error, onFrame]);
 
   return (
-    <div className="relative aspect-square w-full max-w-sm overflow-hidden rounded-2xl border-2 border-accent shadow-[0_0_30px_-5px_var(--accent)]">
+    <div className="relative aspect-square w-[min(75vw,34vh,320px)] overflow-hidden rounded-2xl border-2 border-accent shadow-[0_0_30px_-5px_var(--accent)] sm:w-[min(60vw,44vh,440px)] lg:w-[min(45vw,50vh,520px)]">
       {error ? (
         <div className="flex h-full w-full items-center justify-center bg-surface px-6 text-center text-sm text-danger">
           {error}
@@ -84,9 +84,6 @@ export function CameraFeed({ active, onFrame, meshPoints, meshConnections }: Cam
           <div className="absolute inset-x-0 h-1 bg-accent/70 shadow-[0_0_12px_2px_var(--accent)] animate-scan-line" />
         </div>
       )}
-      <span className="absolute top-2 right-2 rounded-full bg-black/60 px-2 py-1 font-mono text-[10px] tracking-widest text-accent">
-        LIVE FEED
-      </span>
       <canvas ref={canvasRef} className="hidden" />
     </div>
   );

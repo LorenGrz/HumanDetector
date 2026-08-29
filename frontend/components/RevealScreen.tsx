@@ -1,15 +1,27 @@
+import type { RevealVariant } from "@/types/protocol";
+import { RevealSound } from "./RevealSound";
+import { MuteButton } from "./MuteButton";
+
 interface RevealScreenProps {
+  variant: RevealVariant;
   label: string;
   message: string;
   onRestart: () => void;
 }
 
-export function RevealScreen({ label, message, onRestart }: RevealScreenProps) {
+export function RevealScreen({ variant, label, message, onRestart }: RevealScreenProps) {
+  const isConfirmed = variant === "confirmed";
+  const toneColor = isConfirmed ? "text-accent" : "text-danger";
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
-      <span className="font-mono text-xs tracking-widest text-accent">HUMAN PROTOCOL</span>
-      <WarningIcon />
-      <h1 className="text-2xl font-bold tracking-wide">{label}</h1>
+    <div className="flex h-screen flex-col items-center justify-center gap-6 overflow-hidden px-6 text-center">
+      <RevealSound variant={variant} />
+      <div className="flex w-full max-w-sm items-center justify-center gap-2">
+        <span className="font-mono text-xs tracking-widest text-accent">HUMAN PROTOCOL</span>
+        <MuteButton />
+      </div>
+      {isConfirmed ? <CheckIcon /> : <WarningIcon />}
+      <h1 className={`text-2xl font-bold tracking-wide ${toneColor}`}>{label}</h1>
       <p className="max-w-sm text-sm leading-relaxed text-muted">{message}</p>
       <button
         onClick={onRestart}
@@ -17,7 +29,7 @@ export function RevealScreen({ label, message, onRestart }: RevealScreenProps) {
       >
         REINICIAR
       </button>
-      <footer className="mt-8 flex w-full max-w-sm justify-between font-mono text-[10px] tracking-widest text-muted">
+      <footer className="mt-8 flex w-full max-w-sm justify-between font-mono text-[0.625rem] tracking-widest text-muted">
         <span>v4.02 // ALGORITHMIC_GOVERNANCE_SYSTEM</span>
         <span>PROTOCOL_ISO_9001</span>
       </footer>
@@ -39,6 +51,20 @@ function WarningIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-10 w-10 text-accent"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <path d="M4.5 12.75l6 6 9-13.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

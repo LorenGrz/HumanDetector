@@ -1,11 +1,25 @@
 "use client";
 
+import { useState } from "react";
 import { useVerifierSession } from "@/hooks/useVerifierSession";
 import { VerifierPanel } from "./VerifierPanel";
 import { RevealScreen } from "./RevealScreen";
 import { BackgroundAudio } from "./BackgroundAudio";
+import { WelcomeScreen } from "./WelcomeScreen";
 
 export function VerifierApp() {
+  const [started, setStarted] = useState(false);
+
+  if (!started) {
+    return <WelcomeScreen onStart={() => setStarted(true)} />;
+  }
+
+  return <ActiveVerifier />;
+}
+
+/** Solo se monta después de la bienvenida: recién ahí se conecta el
+ * WebSocket y CameraFeed pide permiso de cámara. */
+function ActiveVerifier() {
   const { state, mesh, sendFrame, restart } = useVerifierSession();
 
   return (

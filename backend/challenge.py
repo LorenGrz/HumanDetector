@@ -47,11 +47,13 @@ _AUTO_PASS_BANK = [
     "Mirá hacia arriba y contá hasta tres en silencio",
 ]
 
-# Ordenado de más fácil a más imposible: se consumen en este orden a medida
-# que avanza la escalada. Cada instrucción tiene su propio banco de
-# sospechas ("suspicion_bank") que comenta específicamente por qué "falla"
-# justo en ese gesto.
-_REJECT_STEPS = [
+# Agrupado en secciones de dificultad (leve -> media -> imposible). Cada
+# sesión recorre las secciones en ese orden, pero DENTRO de cada sección la
+# instrucción elegida es al azar — así dos personas no hacen la misma
+# secuencia exacta, aunque la curva de dificultad sea la misma. Cada
+# instrucción tiene su propio banco de sospechas ("suspicion_bank") que
+# comenta específicamente por qué "falla" justo en ese gesto.
+_REJECT_TIER_MILD = [
     {
         "text": "Sonreí de forma natural",
         "suspicion_bank": [
@@ -76,6 +78,9 @@ _REJECT_STEPS = [
             "Parece más un tic que un sentimiento.",
         ],
     },
+]
+
+_REJECT_TIER_MEDIUM = [
     {
         "text": "Parpadeá de forma asimétrica",
         "suspicion_bank": [
@@ -108,6 +113,9 @@ _REJECT_STEPS = [
             "Se detecta duda, no autenticidad.",
         ],
     },
+]
+
+_REJECT_TIER_IMPOSSIBLE = [
     {
         "text": "Demostrá una emoción irrepetible",
         "suspicion_bank": [
@@ -133,6 +141,26 @@ _REJECT_STEPS = [
         ],
     },
 ]
+
+_REJECT_TIERS = [_REJECT_TIER_MILD, _REJECT_TIER_MEDIUM, _REJECT_TIER_IMPOSSIBLE]
+
+
+def _pick_reject_entries(count: int) -> list[dict]:
+    """Arma `count` pasos de rechazo en secciones de dificultad crecientes,
+    pero la instrucción elegida dentro de cada sección es al azar."""
+    boundaries = [round(count * (i + 1) / len(_REJECT_TIERS)) for i in range(len(_REJECT_TIERS))]
+    entries: list[dict] = []
+    start = 0
+    for tier, end in zip(_REJECT_TIERS, boundaries):
+        section_size = end - start
+        start = end
+        pool: list[dict] = []
+        for _ in range(section_size):
+            if not pool:
+                pool = list(tier)
+                random.shuffle(pool)
+            entries.append(pool.pop())
+    return entries[:count]
 
 _REJECT_MESSAGES = [
     "Patrón facial demasiado uniforme. Reintentá.",
@@ -228,9 +256,7 @@ def _build_plan() -> list[StepSpec]:
     while len(plan) < fail_start - 1:
         plan.append(StepSpec(kind="auto_pass", text=random.choice(_AUTO_PASS_BANK)))
 
-    for entry in _REJECT_STEPS:
-        if len(plan) >= TOTAL_STEPS:
-            break
+    for entry in _pick_reject_entries(TOTAL_STEPS - len(plan)):
         plan.append(StepSpec(kind="reject", text=entry["text"], suspicion_bank=entry["suspicion_bank"]))
 
     return plan[:TOTAL_STEPS]

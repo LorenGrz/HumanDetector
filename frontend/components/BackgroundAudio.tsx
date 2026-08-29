@@ -58,18 +58,28 @@ interface BackgroundAudioProps {
 }
 
 /** Audio de fondo (YouTube oculto), en loop desde LOOP_START_SECONDS, salteando
- * la intro. Suena solo mientras dura la detección (se destruye al salir). */
+ * la intro. Suena solo mientras dura la detección (se destruye al salir).
+ *
+ * El player apunta a un nodo creado a mano (no vía JSX): la API de YouTube
+ * reemplaza ese nodo por su propio iframe por fuera de React. Si React
+ * fuera dueño de ese nodo, las dos reconciliaciones del DOM chocan
+ * ("Failed to execute removeChild") apenas el componente se desmonta o
+ * remonta (p. ej. en Strict Mode). El wrapper que sí maneja React nunca
+ * tiene hijos en su JSX, así que nunca hay conflicto. */
 export function BackgroundAudio({ active }: BackgroundAudioProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
 
   useEffect(() => {
-    if (!active) return;
+    if (!active || !wrapperRef.current) return;
     let cancelled = false;
 
+    const target = document.createElement("div");
+    wrapperRef.current.appendChild(target);
+
     loadYouTubeApi().then(() => {
-      if (cancelled || !containerRef.current || !window.YT) return;
-      playerRef.current = new window.YT.Player(containerRef.current, {
+      if (cancelled || !window.YT) return;
+      playerRef.current = new window.YT.Player(target, {
         videoId: VIDEO_ID,
         playerVars: { autoplay: 1, start: LOOP_START_SECONDS, controls: 0, disablekb: 1 },
         events: {
@@ -85,11 +95,16 @@ export function BackgroundAudio({ active }: BackgroundAudioProps) {
 
     return () => {
       cancelled = true;
-      playerRef.current?.destroy();
+      try {
+        playerRef.current?.destroy();
+      } catch {
+        // El player puede haber mutado el DOM por su cuenta; ignorar.
+      }
       playerRef.current = null;
+      target.remove();
     };
   }, [active]);
 
   if (!active) return null;
-  return <div ref={containerRef} className="hidden" />;
+  return <div ref={wrapperRef} className="hidden" />;
 }

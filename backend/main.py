@@ -11,7 +11,7 @@ import numpy as np
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from challenge import TOTAL_STEPS, ChallengeSession, StepResult
+from challenge import MOTION_PASS_THRESHOLD, TOTAL_STEPS, ChallengeSession, StepResult
 from detector import MESH_CONNECTIONS, FaceGestureDetector, FrameSignals
 
 logging.basicConfig(level=logging.INFO)
@@ -71,11 +71,18 @@ class Sender:
 
 
 async def _scan_and_measure_motion(
-    sender: Sender, detector: FaceGestureDetector, seconds: float
+    sender: Sender,
+    detector: FaceGestureDetector,
+    seconds: float,
+    early_exit_threshold: float | None = None,
 ) -> float:
     """Lee frames durante la ventana del intento, manda landmarks en vivo, y
     devuelve la energía de movimiento acumulada (para los pasos contra
-    reloj: cuánto se movió la cara mientras duró la cuenta regresiva)."""
+    reloj: cuánto se movió la cara mientras duró la cuenta regresiva).
+
+    Si se pasa early_exit_threshold y se supera antes de que termine el
+    tiempo, corta ahí mismo — el paso se reconoce al toque en vez de
+    obligar a esperar el resto de la cuenta regresiva."""
     deadline = time.monotonic() + seconds
     previous_points: list[tuple[float, float]] | None = None
     total_motion = 0.0
@@ -98,6 +105,9 @@ async def _scan_and_measure_motion(
         if previous_points is not None:
             total_motion += _motion_energy(previous_points, signals.mesh_points)
         previous_points = signals.mesh_points
+
+        if early_exit_threshold is not None and total_motion >= early_exit_threshold:
+            return total_motion
 
 
 async def _run_real_step(
@@ -151,7 +161,10 @@ async def verify(websocket: WebSocket) -> None:
                 await sender.send_result(session.auto_pass())
             else:
                 motion_score = await _scan_and_measure_motion(
-                    sender, detector, session.current_duration()
+                    sender,
+                    detector,
+                    session.current_duration(),
+                    early_exit_threshold=MOTION_PASS_THRESHOLD,
                 )
                 result = session.resolve_reject(motion_score)
                 await sender.send_result(result)

@@ -3,6 +3,9 @@ backend/.venv/
 __pycache__/
 *.pyc
 
+# App Runner (ARN del servicio, local)
+backend/deploy/service.env
+
 # Node / Next.js (frontend)
 frontend/node_modules/
 frontend/.next/

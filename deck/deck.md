@@ -64,7 +64,7 @@ title: ¿Sos humano?
   <div class="row"><span class="b">🧠</span><span>MediaPipe te lee la cara: parpadeo, giro, inclinación, boca</span></div>
   <div class="row"><span class="b">🧠</span><span>Los primeros gestos son normales — los pasás sin drama</span></div>
   <div class="row"><span class="b">🤯</span><span>Después, los pedidos se vuelven... creativos</span></div>
-  <div class="row"><span class="b">🌌</span><span>Cuánto aguantás antes de que sea imposible: averigualo vos</span></div>
+  <div class="row"><span class="b">🌌</span><span>¿Cuánto aguantás sin que la IA descubra que no sos humano realmente? Averigualo vos.</span></div>
 </div>
 
 <p class="dim center" style="margin-top:22px">No spoileamos los pedidos finales. Se disfrutan más en vivo.</p>
@@ -100,13 +100,19 @@ title: ¿Sos humano?
 
 <!-- _class: center -->
 
-<div class="kicker">RESULTADO DE LA VERIFICACIÓN</div>
-
-# HUMANO <strong style="color:#b23b3b">NO CONFIRMADO</strong>
-
-<p class="meme mid">🔥 🐶 🔥 &nbsp; todo bien &nbsp; 🔥</p>
-
-<p class="dim">Intentá de nuevo. El resultado va a ser el mismo.</p>
+<div class="cert">
+  <div class="cert-title">CERTIFICADO DE NO-HUMANIDAD</div>
+  <div class="cert-body">
+    <p>Otorgado a <strong>SUJETO&nbsp;#4021</strong></p>
+    <p>El HUMAN_PROTOCOL analizó tus gestos y <strong>no pudo confirmar</strong> tu condición humana.</p>
+    <div class="cert-grid">
+      <span>Estado</span><span>NO CONFIRMADO</span>
+      <span>Validez</span><span>indefinida</span>
+      <span>Apelaciones</span><span>no se aceptan</span>
+    </div>
+  </div>
+  <div class="cert-seal">▓ SELLO ALGORÍTMICO ▓</div>
+</div>
 
 ---
 
@@ -117,3 +123,16 @@ title: ¿Sos humano?
 <p class="big-note">El sistema no está roto: hace exactamente lo que promete — no confiar en nadie.</p>
 
 <p class="dim">Vos, mientras tanto, seguís con la mano levantada.<br>github.com/LorenGrz/HumanDetector</p>
+
+---
+
+<!-- _class: center -->
+
+# CONECTEMOS
+
+<div class="qr-wrap">
+  <img src="assets/qr-portfolio.png" alt="QR al portfolio" />
+  <div class="url">lorengrz.github.io</div>
+</div>
+
+<p class="dim">Mi portfolio. Acá <strong>sí</strong> te dejan pasar.</p>

@@ -216,6 +216,47 @@ code {
   padding: 8px 0;
 }
 
+/* ---------- certificado de no-humanidad ---------- */
+.cert {
+  align-self: center;
+  width: 860px;
+  border: 2px solid var(--green);
+  outline: 1px solid var(--green-dim);
+  outline-offset: 6px;
+  background: linear-gradient(180deg, #0d140f, #0a0a0a);
+  padding: 40px 56px 32px;
+  text-align: center;
+}
+.cert-title {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--green);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 18px;
+  margin-bottom: 22px;
+}
+.cert-body p { font-size: 24px; margin: 0 0 14px; color: var(--fg); }
+.cert-grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: center;
+  gap: 8px 28px;
+  margin-top: 22px;
+  font-family: var(--font-mono);
+  font-size: 19px;
+}
+.cert-grid span:nth-child(odd) { color: var(--muted); text-align: right; }
+.cert-grid span:nth-child(even) { color: var(--green); text-align: left; }
+.cert-seal {
+  margin-top: 26px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.3em;
+  color: var(--green-dim);
+}
+
 /* ---------- QR ---------- */
 .qr-wrap { align-self: center; text-align: center; }
 .qr-wrap img {

@@ -1,0 +1,232 @@
+/* @theme humandetector */
+
+/* ---- Estética "ALGORITHMIC_GOVERNANCE_SYSTEM": terminal negro + verde ---- */
+
+:root {
+  --bg: #0a0a0a;
+  --bg-soft: #131313;
+  --fg: #ededed;
+  --muted: #8a8a8a;
+  --green: #3ddc84;
+  --green-dim: #1f7a48;
+  --line: #262626;
+  --font-sans: "Liberation Sans", "DejaVu Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "JetBrainsMono Nerd Font", ui-monospace, "DejaVu Sans Mono", monospace;
+}
+
+section {
+  width: 1280px;
+  height: 720px;
+  padding: 92px 80px 76px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 28px;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+
+section.center h1 { font-size: 60px; }
+
+/* marca de agua tipo scanline arriba y abajo */
+section::before {
+  content: "HUMAN_PROTOCOL // v4.02";
+  position: absolute;
+  top: 34px;
+  left: 80px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.22em;
+  color: var(--green-dim);
+}
+section::after {
+  content: "ALGORITHMIC_GOVERNANCE_SYSTEM";
+  position: absolute;
+  bottom: 28px;
+  right: 80px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.22em;
+  color: var(--green-dim);
+}
+
+h1 {
+  font-size: 76px;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin: 0 0 20px;
+  color: var(--fg);
+}
+h2 {
+  font-size: 40px;
+  font-weight: 700;
+  margin: 0 0 24px;
+  color: var(--green);
+}
+h1 strong, h2 strong { color: var(--green); }
+
+p { margin: 0 0 16px; }
+strong { color: var(--green); font-weight: 700; }
+em { color: var(--muted); font-style: normal; }
+
+a { color: var(--green); text-decoration: none; }
+
+ul { margin: 8px 0; padding-left: 0; list-style: none; }
+li {
+  margin: 10px 0;
+  padding-left: 28px;
+  position: relative;
+}
+li::before {
+  content: ">";
+  position: absolute;
+  left: 0;
+  color: var(--green);
+  font-family: var(--font-mono);
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 2px 8px;
+  color: var(--green);
+}
+
+/* kicker mono arriba de un título */
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  letter-spacing: 0.28em;
+  color: var(--green);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+/* ---------- MEME: texto estilo impact ---------- */
+.meme {
+  text-transform: uppercase;
+  font-weight: 800;
+  color: #fff;
+  text-align: center;
+  align-self: center;
+  line-height: 1.1;
+  text-shadow:
+    -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000,
+    0 3px 0 #000, 3px 0 0 #000, 0 -3px 0 #000, -3px 0 0 #000;
+}
+.meme.big { font-size: 56px; }
+.meme.mid { font-size: 34px; }
+
+/* ---------- MEME: caja tipo reCAPTCHA ---------- */
+.recaptcha {
+  align-self: center;
+  width: 460px;
+  background: #f7f7f7;
+  border: 1px solid #c9c9c9;
+  border-radius: 6px;
+  padding: 22px 26px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+}
+.recaptcha .box {
+  width: 40px; height: 40px;
+  border: 2px solid #b7b7b7;
+  border-radius: 3px;
+  background: #fff;
+  flex: none;
+  position: relative;
+}
+.recaptcha .box.err { border-color: #d33; }
+.recaptcha .box.err::after {
+  content: "\00d7";
+  position: absolute; inset: -6px 0 0 0;
+  text-align: center;
+  font-size: 44px; line-height: 40px;
+  color: #d33; font-weight: 700;
+}
+.recaptcha .label { color: #202124; font-size: 24px; font-family: var(--font-sans); }
+.recaptcha .brand { margin-left: auto; text-align: center; color: #9aa0a6; font-size: 12px; }
+.recaptcha .brand b { display:block; font-size: 16px; color:#5f6368; }
+
+/* ---------- MEME: Drake dos paneles ---------- */
+.drake { display: grid; grid-template-columns: 120px 1fr; gap: 4px; align-self: center; width: 900px; }
+.drake .cell {
+  display: flex; align-items: center; gap: 20px;
+  padding: 20px 26px;
+  font-size: 26px;
+}
+.drake .ico { font-size: 60px; flex: none; }
+.drake .no  { background: #2a1414; border-left: 4px solid #b23b3b; }
+.drake .yes { background: #12241a; border-left: 4px solid var(--green); color: #eafff2; }
+.drake .no.face  { background: #1a0f0f; justify-content: center; }
+.drake .yes.face { background: #0f1a14; justify-content: center; }
+
+/* ---------- MEME: expanding brain ---------- */
+.brain { display: flex; flex-direction: column; gap: 10px; align-self: center; width: 980px; }
+.brain .row {
+  display: grid; grid-template-columns: 90px 1fr;
+  align-items: center; gap: 18px;
+  padding: 12px 20px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 24px;
+}
+.brain .row .b { font-size: 40px; text-align: center; }
+.brain .row:nth-child(1) { opacity: 0.7; }
+.brain .row:nth-child(3) .b { filter: drop-shadow(0 0 6px var(--green)); }
+.brain .row:nth-child(4) {
+  border-color: var(--green);
+  box-shadow: 0 0 30px rgba(61,220,132,0.25);
+  color: #eafff2;
+}
+.brain .row:nth-child(4) .b { filter: drop-shadow(0 0 16px var(--green)); }
+
+/* ---------- QR ---------- */
+.qr-wrap { align-self: center; text-align: center; }
+.qr-wrap img {
+  width: 360px; height: 360px;
+  background: #fff;
+  padding: 18px;
+  border-radius: 10px;
+  border: 3px solid var(--green);
+}
+.qr-wrap .url {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  color: var(--green);
+  margin-top: 18px;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- utilidades ---------- */
+section.center { text-align: center; align-items: center; }
+section.center h1,
+section.center h2,
+section.center p,
+section.center .kicker { margin-left: auto; margin-right: auto; }
+.stack-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.stack-tags span {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: var(--muted);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 4px 10px;
+}
+.big-note { font-size: 34px; color: var(--fg); }
+.dim { color: var(--muted); font-size: 22px; }
+
+section.lead { text-align: left; }
+section.lead h1 { font-size: 88px; }

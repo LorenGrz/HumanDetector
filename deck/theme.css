@@ -192,6 +192,30 @@ code {
 }
 .brain .row:nth-child(4) .b { filter: drop-shadow(0 0 16px var(--green)); }
 
+/* ---------- pasos numerados ---------- */
+.steps { display: flex; flex-direction: column; gap: 14px; align-self: stretch; }
+.steps .step {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 22px;
+  align-items: center;
+  padding: 14px 22px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 26px;
+}
+.steps .step .n {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--green);
+  border: 1px solid var(--green-dim);
+  border-radius: 6px;
+  text-align: center;
+  padding: 8px 0;
+}
+
 /* ---------- QR ---------- */
 .qr-wrap { align-self: center; text-align: center; }
 .qr-wrap img {

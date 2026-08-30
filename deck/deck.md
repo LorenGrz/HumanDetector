@@ -4,11 +4,14 @@ theme: humandetector
 paginate: false
 html: true
 size: 16:9
+title: ¿Sos humano?
 ---
 
 <!-- _class: lead -->
 
-# LEVANTÁ LA MANO:<br>¿QUIÉN ES <strong>HUMANO</strong>?
+<div class="kicker">Levantá la mano</div>
+
+# ¿SOS <strong>HUMANO</strong>?
 
 <p class="dim">Nadie baja la mano. El sistema tampoco les cree.</p>
 

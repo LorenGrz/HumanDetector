@@ -13,13 +13,13 @@ title: ¿Sos humano?
 
 # ¿SOS <strong>HUMANO</strong>?
 
-<p class="dim">Nadie baja la mano. El sistema tampoco les cree.</p>
+<p class="dim">Cada vez te lo van a preguntar más seguido. Y con menos paciencia.</p>
 
 ---
 
 <!-- _class: center -->
 
-## Todos los días te piden que lo demuestres
+## Verificar tu humanidad ya es rutina
 
 <div class="recaptcha">
   <div class="box err"></div>
@@ -27,47 +27,62 @@ title: ¿Sos humano?
   <div class="brand"><b>reCAPTCHA</b>Privacidad · Términos</div>
 </div>
 
-<p class="dim" style="margin-top:22px">Semáforos, bicicletas, "seleccioná todas las imágenes con un colectivo".</p>
-<p class="meme mid" style="margin-top:18px">¿y si el sistema<br>simplemente nunca te cree?</p>
+<p class="dim" style="margin-top:22px">Semáforos, bicicletas, "seleccioná todas las imágenes con un colectivo". Un trámite.</p>
+
+<p class="statement" style="margin-top:22px">¿Y si dejara de ser un trámite<br>y pasara a ser un <strong>juicio</strong>?</p>
 
 ---
 
-## <strong>HumanDetector</strong>: un verificador que no aprueba a nadie
+# <strong>HumanDetector</strong>
 
 <div class="drake">
   <div class="cell no face"><span class="ico">🙅</span></div>
-  <div class="cell no">CAPTCHA: "seleccioná las fotos con semáforos"</div>
+  <div class="cell no">"Marcá la casilla: no soy un robot."</div>
   <div class="cell yes face"><span class="ico">🙆</span></div>
-  <div class="cell yes">HUMANDETECTOR: "mostrá desconfianza genuina a cámara"</div>
+  <div class="cell yes">"Demostralo. Con la cara. En vivo."</div>
 </div>
 
-<p class="dim center" style="margin-top:26px">Una instalación satírica: te pide gestos por la webcam, los detecta de verdad, y va subiendo la apuesta.</p>
+<p class="statement" style="margin-top:28px">Un sistema que te <strong>presiona</strong> a demostrar tu humanidad — en un mundo donde cada vez más nos reemplazan.</p>
 
 ---
 
-## Cómo lo vas a usar
+## Cómo funciona
 
 <div class="steps">
   <div class="step"><span class="n">01</span><span>Escaneás el QR — se abre en tu teléfono.</span></div>
   <div class="step"><span class="n">02</span><span>Le das acceso a la cámara. Todo pasa en el momento; nada se guarda.</span></div>
-  <div class="step"><span class="n">03</span><span>El sistema te pide un gesto. Lo hacés. Lo detecta de verdad.</span></div>
+  <div class="step"><span class="n">03</span><span>Te pide un gesto. Lo hacés. <strong>MediaPipe te lee la cara de verdad</strong> — parpadeo, giro, inclinación.</span></div>
   <div class="step"><span class="n">04</span><span>Pasás ese paso → el siguiente es más exigente. Y así.</span></div>
 </div>
 
-<p class="meme mid" style="margin-top:26px">🪤 es una trampa &nbsp;·&nbsp; probala igual</p>
+<p class="statement" style="margin-top:24px">No está hecho para que apruebes.<br>Está hecho para que <strong>te lo preguntes</strong>.</p>
 
 ---
 
-## La detección es real
+## Primeras reacciones
 
-<div class="brain">
-  <div class="row"><span class="b">🧠</span><span>MediaPipe te lee la cara: parpadeo, giro, inclinación, boca</span></div>
-  <div class="row"><span class="b">🧠</span><span>Los primeros gestos son normales — los pasás sin drama</span></div>
-  <div class="row"><span class="b">🤯</span><span>Después, los pedidos se vuelven... creativos</span></div>
-  <div class="row"><span class="b">🌌</span><span>¿Cuánto aguantás sin que la IA descubra que no sos humano realmente? Averigualo vos.</span></div>
+<div class="reviews">
+  <div class="rev">
+    <div class="stars">★☆☆☆☆</div>
+    <div class="q">"Hice todo lo que me pidió. Sigo sin ser humano oficialmente."</div>
+    <div class="who">— usuario #2213</div>
+  </div>
+  <div class="rev">
+    <div class="stars">★★★★★</div>
+    <div class="q">"La mejor crisis existencial que tuve este año."</div>
+    <div class="who">— anónimo</div>
+  </div>
+  <div class="rev">
+    <div class="stars">★☆☆☆☆</div>
+    <div class="q">"Se lo pasé a mi jefe. Tampoco aprobó. Ahora nos llevamos mejor."</div>
+    <div class="who">— RR.HH.</div>
+  </div>
+  <div class="rev">
+    <div class="stars">★★★☆☆</div>
+    <div class="q">"Llegué lejos. Nadie llega lo suficiente."</div>
+    <div class="who">— un tester</div>
+  </div>
 </div>
-
-<p class="dim center" style="margin-top:22px">No spoileamos los pedidos finales. Se disfrutan más en vivo.</p>
 
 ---
 
@@ -98,21 +113,15 @@ title: ¿Sos humano?
 
 ---
 
-<!-- _class: center -->
+## ¿Y si el sistema <strong>realmente</strong> te juzgara?
 
-<div class="cert">
-  <div class="cert-title">CERTIFICADO DE NO-HUMANIDAD</div>
-  <div class="cert-body">
-    <p>Otorgado a <strong>SUJETO&nbsp;#4021</strong></p>
-    <p>El HUMAN_PROTOCOL analizó tus gestos y <strong>no pudo confirmar</strong> tu condición humana.</p>
-    <div class="cert-grid">
-      <span>Estado</span><span>NO CONFIRMADO</span>
-      <span>Validez</span><span>indefinida</span>
-      <span>Apelaciones</span><span>no se aceptan</span>
-    </div>
-  </div>
-  <div class="cert-seal">▓ SELLO ALGORÍTMICO ▓</div>
-</div>
+<ul>
+  <li>Bancos que te piden una selfie para abrir una cuenta.</li>
+  <li>"Liveness detection": girá la cabeza, parpadeá, seguí el punto con la mirada.</li>
+  <li>Cada año, más gates de "probá que sos humano" — y más difíciles.</li>
+</ul>
+
+<p class="statement" style="margin-top:24px">HumanDetector solo lleva esa lógica <strong>hasta el final</strong>. La parte incómoda es que ya la viste antes.</p>
 
 ---
 

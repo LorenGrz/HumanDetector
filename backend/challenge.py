@@ -97,7 +97,7 @@ _AUTO_PASS_BANK = [
     "Quedate quieto durante el escaneo",
 ]
 
-# Agrupado en secciones de dificultad (leve -> media -> imposible). Cada
+# Agrupado en secciones de dificultad (leve -> media -> contrarreloj). Cada
 # sesión recorre las secciones en ese orden, pero DENTRO de cada sección la
 # instrucción elegida es al azar — así dos personas no hacen la misma
 # secuencia exacta, aunque la curva de dificultad sea la misma. Cada
@@ -172,11 +172,11 @@ _REJECT_TIER_MEDIUM = [
         ],
     },
     {
-        "text": "Generá una expresión que no hayas ensayado nunca",
+        "text": "Subí y bajá las cejas tres veces seguidas, rápido",
         "suspicion_bank": [
-            "Toda expresión humana ya fue ensayada alguna vez.",
-            "El sistema no puede confirmar espontaneidad real.",
-            "Se detecta duda, no autenticidad.",
+            "El ritmo se cae en la segunda repetición.",
+            "Faltó una. El sistema las cuenta.",
+            "Demasiado lento para el intervalo pedido.",
         ],
     },
     {
@@ -197,50 +197,70 @@ _REJECT_TIER_MEDIUM = [
     },
 ]
 
-_REJECT_TIER_IMPOSSIBLE = [
+# Cada consigna acá es una cadena de gestos normales y perfectamente
+# posibles, pero encadenados y contra un reloj que ya está en el piso: la
+# persona sabe qué hacer, solo no le da el tiempo. Nada de pedidos
+# absurdos que la dejen mirando la pantalla sin entender.
+_REJECT_TIER_RAPID = [
     {
-        "text": "Demostrá una emoción irrepetible",
+        "text": "Parpadeá dos veces, girá a la izquierda, después a la derecha y volvé al centro",
         "suspicion_bank": [
-            "Las emociones humanas se repiten estadísticamente.",
-            "Nada en este rostro es, en rigor, irrepetible.",
-            "Contradicción lógica detectada en el pedido y en la respuesta.",
+            "Vas un gesto atrás. El reloj no espera.",
+            "La secuencia quedó a medias cuando se acabó el tiempo.",
+            "Demasiado lento para el ritmo pedido.",
         ],
     },
     {
-        "text": "Sincronizá tu expresión con un recuerdo que no tenés",
+        "text": "Abrí la boca, cerrala, subí las cejas y asentí con la cabeza",
         "suspicion_bank": [
-            "Pedido lógicamente imposible. El sujeto lo sigue intentando.",
-            "Persistencia sospechosa ante un pedido sin sentido.",
-            "Eso, en rigor, no se puede hacer. Y sin embargo lo intenta.",
+            "Dos pasos se superpusieron. No cuenta.",
+            "El orden se mezcló. Habría que empezar de nuevo.",
+            "Se registró apuro, no la secuencia.",
         ],
     },
     {
-        "text": "Mostrá una emoción que la especie humana todavía no descubrió",
+        "text": "Mirá arriba, abajo, a tu izquierda y a tu derecha, en ese orden",
         "suspicion_bank": [
-            "Definición pendiente. El sistema tampoco sabe qué buscar.",
-            "El sujeto sigue esforzándose por algo indefinible.",
-            "Ni el protocolo sabe cómo se vería eso. Igual, insiste.",
+            "Faltó una dirección. El sistema las cuenta todas.",
+            "El recorrido salió desordenado.",
+            "Se acabó el tiempo a mitad de camino.",
         ],
     },
     {
-        "text": "Mostrá alegría sin mover ningún músculo conocido",
+        "text": "Incliná la cabeza a un hombro, al otro, y después hacia adelante",
         "suspicion_bank": [
-            "Contradicción detectada: toda alegría implica movimiento muscular.",
-            "El sujeto lo intenta igual. Persistencia anotada.",
-            "No hay músculo que cumpla ese criterio. Se solicita igual.",
+            "La tercera inclinación no llegó a tiempo.",
+            "Movimiento encadenado incompleto.",
+            "Demasiado lento para el ritmo pedido.",
         ],
     },
     {
-        "text": "Expresá una emoción que vas a sentir recién en el futuro",
+        "text": "Poné cara seria, después sonreí, después sorpresa, sin parar entre una y otra",
         "suspicion_bank": [
-            "El sistema no puede verificar emociones que todavía no ocurrieron.",
-            "Se detecta un intento de anticipación emocional. Insuficiente.",
-            "Pedido temporalmente imposible. El sujeto igual pone cara.",
+            "Las expresiones se pisaron entre sí.",
+            "No hubo corte limpio entre una cara y la otra.",
+            "El último cambio llegó tarde.",
+        ],
+    },
+    {
+        "text": "Girá a la izquierda, parpadeá, girá a la derecha, parpadeá de nuevo",
+        "suspicion_bank": [
+            "Quedó un parpadeo sin registrar cuando saltó el reloj.",
+            "Se mezcló el orden de los giros.",
+            "Apuraste y salió todo junto. Ilegible.",
+        ],
+    },
+    {
+        "text": "Asentí dos veces, negá con la cabeza dos veces y quedate mirando al centro",
+        "suspicion_bank": [
+            "El conteo no cerró: faltó un movimiento.",
+            "La secuencia se cortó por tiempo.",
+            "Demasiado lento para el ritmo pedido.",
         ],
     },
 ]
 
-_REJECT_TIERS = [_REJECT_TIER_MILD, _REJECT_TIER_MEDIUM, _REJECT_TIER_IMPOSSIBLE]
+_REJECT_TIERS = [_REJECT_TIER_MILD, _REJECT_TIER_MEDIUM, _REJECT_TIER_RAPID]
 
 
 def _pick_reject_entries(count: int) -> list[dict]:

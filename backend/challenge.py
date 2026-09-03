@@ -276,40 +276,12 @@ _ACCUSATIONS = [
         "message": "Se detectó parpadeo nictitante incompatible con la fisiología humana estándar.",
     },
     {
-        "label": "ENTIDAD SINTÉTICA NO REGISTRADA",
-        "message": "Los patrones faciales no coinciden con ningún registro biológico catalogado.",
-    },
-    {
-        "label": "REPLICANTE NIVEL 3",
-        "message": "Respuesta emocional excesivamente consistente para tratarse de un sujeto orgánico.",
-    },
-    {
-        "label": "ANOMALÍA DIMENSIONAL",
+        "label": "POSIBLE ALIENÍGENA",
         "message": "La firma biométrica no converge con ningún linaje humano conocido por el sistema.",
     },
     {
-        "label": "RESIDUO ECTOPLÁSMICO",
-        "message": "Se detectaron fluctuaciones faciales sin correlato térmico. Posible entidad no física.",
-    },
-    {
-        "label": "UNIDAD DE VIGILANCIA NO HUMANA",
-        "message": "El patrón de parpadeo es demasiado regular para tratarse de un sistema nervioso biológico.",
-    },
-    {
-        "label": "VIAJERO TEMPORAL NO REGISTRADO",
-        "message": "El patrón de envejecimiento facial no coincide con la edad declarada.",
-    },
-    {
-        "label": "PROTOTIPO DE IA FUGADO",
-        "message": "Las respuestas son demasiado consistentes con un modelo entrenado. Posible fuga de laboratorio.",
-    },
-    {
-        "label": "DOBLE DE CUERPO NO ACREDITADO",
-        "message": "Coincidencia biométrica parcial con una identidad ya registrada. Posible sustitución.",
-    },
-    {
-        "label": "MIEMBRO DE SOCIEDAD SECRETA NIVEL MEDIO",
-        "message": "Se detectaron gestos faciales compatibles con protocolos de reconocimiento no públicos.",
+        "label": "IA GENERATIVA SIN SUPERVISIÓN HUMANA",
+        "message": "Las respuestas faciales son estadísticamente indistinguibles de un modelo entrenado. Alucinación de gestos no descartada.",
     },
     {
         "label": "SABOTEADOR DEL MUNDIAL 2026",
@@ -342,6 +314,22 @@ _ACCUSATIONS = [
     {
         "label": "INFILTRADO DE LA CONMEBOL",
         "message": "Acceso sospechoso a información de sorteos antes de su publicación oficial.",
+    },
+    {
+        "label": "SOSPECHOSO DE NO DEVOLVER EL TÁPER",
+        "message": "Se registran recipientes plásticos ajenos sin restitución en al menos dos domicilios.",
+    },
+    {
+        "label": "USUARIO QUE DIJO 'YA SALGO' HACE CUARENTA MINUTOS",
+        "message": "Discrepancia crítica entre la ubicación declarada y la ubicación real.",
+    },
+    {
+        "label": "REVENDEDOR DE ENTRADAS NO ACREDITADO",
+        "message": "Patrón facial compatible con operaciones de reventa a valor inflado.",
+    },
+    {
+        "label": "COMENSAL DE MILANESAS FRÍAS A LAS TRES DE LA MAÑANA",
+        "message": "Actividad de heladera fuera de horario compatible con hábitos no declarados.",
     },
 ]
 

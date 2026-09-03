@@ -22,13 +22,18 @@ export function VerifierApp() {
 
 function VerifierFlow() {
   const [started, setStarted] = useState(false);
+  // El navegador bloquea el autoplay con sonido hasta que hay un gesto del
+  // usuario en la página. Recién en el primer toque/click sobre la pantalla
+  // de bienvenida montamos el player, así la música de ascensor suena de
+  // verdad en vez de quedar en pausa silenciosa.
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
 
   if (!started) {
     return (
-      <>
-        <BackgroundAudio active videoId={ELEVATOR_VIDEO_ID} />
+      <div className="contents" onPointerDownCapture={() => setAudioUnlocked(true)}>
+        <BackgroundAudio active={audioUnlocked} videoId={ELEVATOR_VIDEO_ID} />
         <WelcomeScreen onStart={() => setStarted(true)} />
-      </>
+      </div>
     );
   }
 
@@ -42,6 +47,12 @@ function ActiveVerifier() {
 
   return (
     <>
+      {/* Sigue sonando el ascensor mientras conecta el WebSocket, hasta que
+          llega la primera instrucción y entra la música del test. */}
+      <BackgroundAudio
+        active={state.phase === "connecting" || state.phase === "disconnected"}
+        videoId={ELEVATOR_VIDEO_ID}
+      />
       <BackgroundAudio
         active={state.phase === "verifying"}
         videoId={ALIEN_VIDEO_ID}
